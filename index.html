@@ -20,7 +20,7 @@
   <header class="topbar">
     <div class="topbar-right">
       <div class="developer-tag">developed by SAM</div>
-      <div class="brand"><span class="brand-mark">ج</span><span>تحويشتي</span></div>
+      <div class="brand" id="brandBtn" style="cursor: pointer;"><span class="brand-mark">ج</span><span>تحويشتي</span></div>
     </div>
 
     <!-- منطقة بيانات المستخدم + الكريدت والستريك -->
@@ -65,22 +65,22 @@
     <!-- 2. شاشة التطبيق الرئيسية (بعد تسجيل الدخول) -->
     <div id="appView" class="app-container hidden">
       
-      <!-- القائمة الجانبية (Sidebar Navigation) -->
+      <!-- القائمة الجانبية للشاشات الكبيرة (Sidebar Navigation) -->
       <aside class="sidebar">
-        <nav id="sidebarNav" class="sidebar-nav">
-          <button class="sidebar-link active" data-tab="dashboard">
+        <nav id="sidebarNav" class="sidebar-nav" role="tablist">
+          <button class="sidebar-link active" data-tab="dashboard" role="tab" aria-selected="true">
             <span class="nav-icon">📊</span>
             <span>الرئيسية والإحصائيات</span>
           </button>
-          <button class="sidebar-link" data-tab="saving">
+          <button class="sidebar-link" data-tab="saving" role="tab" aria-selected="false">
             <span class="nav-icon">🎯</span>
             <span>جداول التحويش</span>
           </button>
-          <button class="sidebar-link" data-tab="pools">
+          <button class="sidebar-link" data-tab="pools" role="tab" aria-selected="false">
             <span class="nav-icon">📜</span>
             <span>جمعياتي (توثيق محمي)</span>
           </button>
-          <button class="sidebar-link" data-tab="credits">
+          <button class="sidebar-link" data-tab="credits" role="tab" aria-selected="false">
             <span class="nav-icon">💎</span>
             <span>شراء الكريدت</span>
           </button>
@@ -91,7 +91,7 @@
       <section class="content-area">
 
         <!-- التبويب 1: الرئيسية والإحصائيات (Dashboard) -->
-        <div id="tab-dashboard" class="tab-content">
+        <div id="tab-dashboard" class="tab-content" role="tabpanel">
           <div class="dashboard-head">
             <div>
               <span class="eyebrow">📈 نظرة عامة</span>
@@ -116,7 +116,7 @@
         </div>
 
         <!-- التبويب 2: جداول التحويش (Saving Plans) -->
-        <div id="tab-saving" class="tab-content hidden">
+        <div id="tab-saving" class="tab-content hidden" role="tabpanel">
           <div class="dashboard-head">
             <div>
               <span class="eyebrow">🚀 خطتك الشخصية</span>
@@ -167,7 +167,7 @@
         </div>
 
         <!-- التبويب 3: الجمعيات التوثيقية (Moneypools) -->
-        <div id="tab-pools" class="tab-content hidden">
+        <div id="tab-pools" class="tab-content hidden" role="tabpanel">
           <div class="dashboard-head">
             <div>
               <span class="eyebrow">📜 إدارة الجمعيات بضمان قانوني</span>
@@ -183,7 +183,7 @@
         </div>
 
         <!-- التبويب 4: شراء الكريدت (Buy Credits) -->
-        <div id="tab-credits" class="tab-content hidden">
+        <div id="tab-credits" class="tab-content hidden" role="tabpanel">
           <div class="subscription-card">
             <h3>شحن رصيد الكريدت عبر WE Pay 💎</h3>
             <p>يمكنك شحن رصيدك لاستخدام خدمات طباعة الجداول وإنشاء الخطط الإضافية:</p>
@@ -236,6 +236,26 @@
       </section>
     </div>
   </main>
+
+  <!-- شريط التنقل السفلي للهواتف الذكية (Bottom Navigation) -->
+  <nav class="bottom-nav hidden" id="bottomNav">
+    <button class="bottom-nav-link active" data-tab="dashboard">
+      <span class="nav-icon">📊</span>
+      <span>الرئيسية</span>
+    </button>
+    <button class="bottom-nav-link" data-tab="saving">
+      <span class="nav-icon">🎯</span>
+      <span>التحويش</span>
+    </button>
+    <button class="bottom-nav-link" data-tab="pools">
+      <span class="nav-icon">📜</span>
+      <span>الجمعيات</span>
+    </button>
+    <button class="bottom-nav-link" data-tab="credits">
+      <span class="nav-icon">💎</span>
+      <span>الكريدت</span>
+    </button>
+  </nav>
 
   <!-- ========================================== -->
   <!-- النوافذ المنبثقة (Modals)                  -->
