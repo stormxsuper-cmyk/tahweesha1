@@ -1,49 +1,80 @@
--- تحويشتي database setup
+-- ==========================================
+-- تحويشتي Database Setup (Full Complete Script)
 -- Run this entire script in Supabase SQL Editor.
+-- ==========================================
 
-create extension if not exists pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-create table if not exists public.saving_plans (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
-  target_amount integer not null check (target_amount >= 20),
-  created_at timestamptz not null default now()
+-- 1. جدول خطط التحويش
+CREATE TABLE IF NOT EXISTS public.saving_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  target_amount INTEGER NOT NULL CHECK (target_amount >= 20),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-create table if not exists public.saving_items (
-  id uuid primary key default gen_random_uuid(),
-  plan_id uuid not null references public.saving_plans(id) on delete cascade,
-  user_id uuid not null references auth.users(id) on delete cascade,
-  denomination integer not null check (denomination in (20,50,100,200,250)),
-  position integer not null,
-  checked boolean not null default false,
-  created_at timestamptz not null default now()
+-- 2. جدول خانات التحويش (تم تحديث القيم المسموحة لدعم الفئات الكبيرة)
+CREATE TABLE IF NOT EXISTS public.saving_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id UUID NOT NULL REFERENCES public.saving_plans(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  denomination INTEGER NOT NULL CHECK (denomination IN (20, 50, 100, 200, 250, 300, 500)),
+  position INTEGER NOT NULL,
+  checked BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-create index if not exists saving_plans_user_id_idx on public.saving_plans(user_id);
-create index if not exists saving_items_plan_id_idx on public.saving_items(plan_id);
+-- 3. جدول طلبات الترقية والاشتراكات (WE Pay)
+CREATE TABLE IF NOT EXISTS public.premium_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_email TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  sender_phone TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
-alter table public.saving_plans enable row level security;
-alter table public.saving_items enable row level security;
+-- الفهارس لتحسين الأداء (Indexes)
+CREATE INDEX IF NOT EXISTS saving_plans_user_id_idx ON public.saving_plans(user_id);
+CREATE INDEX IF NOT EXISTS saving_items_plan_id_idx ON public.saving_items(plan_id);
+CREATE INDEX IF NOT EXISTS premium_requests_user_id_idx ON public.premium_requests(user_id);
 
--- Users can only see/change their own plans.
-drop policy if exists "plans_select_own" on public.saving_plans;
-create policy "plans_select_own" on public.saving_plans for select using (auth.uid() = user_id);
+-- تفعيل الحماية الحيوية (Row Level Security)
+ALTER TABLE public.saving_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saving_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.premium_requests ENABLE ROW LEVEL SECURITY;
 
-drop policy if exists "plans_insert_own" on public.saving_plans;
-create policy "plans_insert_own" on public.saving_plans for insert with check (auth.uid() = user_id);
+-- ==========================================
+-- سياسات الأمان (RLS Policies)
+-- ==========================================
 
-drop policy if exists "plans_delete_own" on public.saving_plans;
-create policy "plans_delete_own" on public.saving_plans for delete using (auth.uid() = user_id);
+-- سياسات جدول saving_plans
+DROP POLICY IF EXISTS "plans_select_own" ON public.saving_plans;
+CREATE POLICY "plans_select_own" ON public.saving_plans FOR SELECT USING (auth.uid() = user_id);
 
-drop policy if exists "items_select_own" on public.saving_items;
-create policy "items_select_own" on public.saving_items for select using (auth.uid() = user_id);
+DROP POLICY IF EXISTS "plans_insert_own" ON public.saving_plans;
+CREATE POLICY "plans_insert_own" ON public.saving_plans FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-drop policy if exists "items_insert_own" on public.saving_items;
-create policy "items_insert_own" on public.saving_items for insert with check (auth.uid() = user_id);
+DROP POLICY IF EXISTS "plans_delete_own" ON public.saving_plans;
+CREATE POLICY "plans_delete_own" ON public.saving_plans FOR DELETE USING (auth.uid() = user_id);
 
-drop policy if exists "items_update_own" on public.saving_items;
-create policy "items_update_own" on public.saving_items for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+-- سياسات جدول saving_items
+DROP POLICY IF EXISTS "items_select_own" ON public.saving_items;
+CREATE POLICY "items_select_own" ON public.saving_items FOR SELECT USING (auth.uid() = user_id);
 
-drop policy if exists "items_delete_own" on public.saving_items;
-create policy "items_delete_own" on public.saving_items for delete using (auth.uid() = user_id);
+DROP POLICY IF EXISTS "items_insert_own" ON public.saving_items;
+CREATE POLICY "items_insert_own" ON public.saving_items FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "items_update_own" ON public.saving_items;
+CREATE POLICY "items_update_own" ON public.saving_items FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "items_delete_own" ON public.saving_items;
+CREATE POLICY "items_delete_own" ON public.saving_items FOR DELETE USING (auth.uid() = user_id);
+
+-- سياسات جدول premium_requests
+DROP POLICY IF EXISTS "premium_select_own" ON public.premium_requests;
+CREATE POLICY "premium_select_own" ON public.premium_requests FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "premium_insert_own" ON public.premium_requests;
+CREATE POLICY "premium_insert_own" ON public.premium_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
