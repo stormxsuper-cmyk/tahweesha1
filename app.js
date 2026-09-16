@@ -22,9 +22,8 @@ const authMessage = document.getElementById('authMessage');
 const planMessage = document.getElementById('planMessage');
 const poolMessage = document.getElementById('poolMessage');
 
-// القائمة الجانبية (Sidebar) والتبويبات
-const sidebarNav = document.getElementById('sidebarNav');
-const tabButtons = document.querySelectorAll('.sidebar-link');
+// القائمة الجانبية والشريط السفلي (Navigation & Tabs)
+const tabButtons = document.querySelectorAll('.nav-btn, .sidebar-link');
 const tabSections = document.querySelectorAll('.tab-content');
 
 // عناصر التحويش
@@ -105,21 +104,24 @@ function randomShuffle(arr) {
 }
 
 // ==========================================
-// 4. إدارة القائمة الجانبية (Sidebar & Tabs)
+// 4. إدارة نظام التنقل والتبويبات (Navigation & Tabs)
 // ==========================================
 tabButtons?.forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     const targetTab = btn.getAttribute('data-tab');
+    if (!targetTab) return;
 
     tabButtons.forEach(b => b.classList.remove('active'));
     tabSections.forEach(s => s.classList.add('hidden'));
 
-    btn.classList.add('active');
+    // تفعيل كل الأزرار المرتبطة بنفس التاب
+    document.querySelectorAll(`[data-tab="${targetTab}"]`).forEach(b => b.classList.add('active'));
+
     const activeSection = document.getElementById(`tab-${targetTab}`);
     if (activeSection) activeSection.classList.remove('hidden');
 
-    // تحميل داتا خاصة بالتاب
+    // تحميل البيانات الخاصة بالتاب
     if (targetTab === 'pools') loadMoneypools();
     if (targetTab === 'credits') loadCreditHistory();
     if (targetTab === 'dashboard') updateDashboardStats();
@@ -276,26 +278,39 @@ function renderPlansHeader() {
 
   allPlans.forEach((p, i) => {
     const card = document.createElement('div');
+    const isSelected = currentPlan?.id === p.id;
+    const planSaved = Number(p.current_amount || 0);
+    const planTarget = Number(p.target_amount || 1);
+    const planPercent = Math.min(100, Math.round((planSaved / planTarget) * 100));
+
     card.style.cssText = `
-      background: ${currentPlan?.id === p.id ? 'rgba(59, 130, 246, 0.15)' : 'rgba(30, 41, 59, 0.7)'};
-      border: 1px solid ${currentPlan?.id === p.id ? '#3b82f6' : 'rgba(255,255,255,0.1)'};
-      padding: 12px 16px; border-radius: 12px; margin-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center;
+      background: ${isSelected ? 'rgba(37, 99, 235, 0.15)' : 'rgba(30, 41, 59, 0.7)'};
+      border: 1px solid ${isSelected ? '#3b82f6' : 'rgba(255,255,255,0.08)'};
+      padding: 14px; border-radius: 14px; margin-bottom: 12px;
+      display: flex; flex-direction: column; gap: 8px;
     `;
 
     const planTitle = p.title || `تحويشة #${i + 1}`;
 
     card.innerHTML = `
-      <div>
-        <div style="color: #facc15; font-size: 0.85rem; font-weight: bold; margin-bottom: 2px;">
-          (${planTitle})
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="color: #facc15; font-size: 0.9rem; font-weight: 700;">🎯 ${planTitle}</span>
+          <div style="color: #fff; font-size: 1.1rem; font-weight: 700; margin-top:2px;">${money(p.target_amount)}</div>
         </div>
-        <strong style="color: #fff; font-size: 1.05rem;">${money(p.target_amount)}</strong>
-        <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">تم تجميع: ${money(p.current_amount || 0)}</div>
+        <div style="display:flex; gap:6px;">
+          ${!isSelected ? `<button onclick="switchPlan('${p.id}')" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:600;">فتح 🔓</button>` : '<span style="background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:4px 8px; border-radius:6px; font-size:0.75rem;">نشط الآن ✨</span>'}
+          <button onclick="deletePlan('${p.id}')" style="background:rgba(239, 68, 68, 0.2); color:#f87171; border:1px solid rgba(239, 68, 68, 0.3); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem;">🗑️</button>
+        </div>
       </div>
-      <div>
-        ${currentPlan?.id !== p.id ? `<button onclick="switchPlan('${p.id}')" class="ghost-btn" style="margin-left: 8px;">فتح</button>` : ''}
-        <button onclick="deletePlan('${p.id}')" style="background: #ef4444; color: #fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">حذف 🗑️</button>
+      
+      <!-- شريط إنجاز الخطة -->
+      <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:4px;">
+        <span>تم تحويش: ${money(planSaved)}</span>
+        <span style="color:#34d399; font-weight:bold;">${planPercent}%</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.1); height:6px; border-radius:3px; overflow:hidden;">
+        <div style="background: linear-gradient(90deg, #10b981, #34d399); width:${planPercent}%; height:100%; border-radius:3px;"></div>
       </div>
     `;
     plansList.appendChild(card);
@@ -335,19 +350,33 @@ function updateTotals() {
   }
 }
 
+// تحديث الإحصائيات مع النسب المئوية الكلية
 function updateDashboardStats() {
   let totalSavedSum = 0;
+  let totalTargetSum = 0;
   let maxTarget = 0;
 
   allPlans.forEach(p => {
     totalSavedSum += Number(p.current_amount || 0);
+    totalTargetSum += Number(p.target_amount || 0);
     if (Number(p.target_amount) > maxTarget) maxTarget = Number(p.target_amount);
   });
+
+  const overallPercent = totalTargetSum > 0 
+    ? Math.min(100, Math.round((totalSavedSum / totalTargetSum) * 100)) 
+    : 0;
 
   if (totalSavedStat) totalSavedStat.textContent = money(totalSavedSum);
   if (activePlansStat) activePlansStat.textContent = allPlans.length.toString();
   if (highestPlanStat) highestPlanStat.textContent = money(maxTarget);
-  if (streakDisplay) streakDisplay.textContent = `🔥 ${userStreak} يوم متتالي`;
+  if (streakDisplay) streakDisplay.textContent = `${userStreak} يوم 🔥`;
+
+  // تحديث النسبة المئوية وشريط التقدم في اللوحة العامة
+  const totalSavedBar = document.getElementById('totalSavedBar');
+  const totalSavedPercent = document.getElementById('totalSavedPercent');
+
+  if (totalSavedBar) totalSavedBar.style.width = `${overallPercent}%`;
+  if (totalSavedPercent) totalSavedPercent.textContent = `${overallPercent}% من إجمالي الأهداف`;
 }
 
 // ==========================================
@@ -580,7 +609,7 @@ function renderMoneypools() {
   poolsList.innerHTML = '';
 
   if (!currentPools.length) {
-    poolsList.innerHTML = '<p class="empty-text">لا توجد جمعيات قائمة حالياً. أنشئ جمعيتك الأولى وانقل المعاملات لمستوى رسمي ومحمي!</p>';
+    poolsList.innerHTML = '<p class="empty-text" style="color:#94a3b8; text-align:center; padding:20px 0;">لا توجد جمعيات قائمة حالياً. أنشئ جمعيتك الأولى وانقل المعاملات لمستوى رسمي ومحمي! 📜</p>';
     return;
   }
 
@@ -589,17 +618,17 @@ function renderMoneypools() {
     const card = document.createElement('div');
     card.className = 'pool-card';
     card.style.cssText = `
-      background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px; padding: 16px; margin-bottom: 16px;
+      background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 16px; margin-bottom: 16px;
     `;
 
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:#facc15; margin:0;">${pool.title} ${isOwner ? '<span style="font-size:0.7rem; background:#3b82f6; color:#fff; padding:2px 6px; border-radius:4px;">صاحب الجمعية</span>' : ''}</h3>
-        <span style="color:#86efac; font-weight:bold;">${money(pool.installment_amount)} / ${pool.cycle_period}</span>
+        <h3 style="color:#facc15; margin:0; font-size:1.1rem;">📜 ${pool.title} ${isOwner ? '<span style="font-size:0.7rem; background:#2563eb; color:#fff; padding:2px 6px; border-radius:4px; margin-right:6px;">صاحب الجمعية</span>' : ''}</h3>
+        <span style="color:#34d399; font-weight:bold; font-size:0.95rem;">${money(pool.installment_amount)} / ${pool.cycle_period}</span>
       </div>
-      <p style="color:#94a3b8; font-size:0.85rem; margin: 8px 0;">عدد الأعضاء: ${pool.moneypool_members?.length || 0} عضو</p>
-      <button onclick="openPoolDetails('${pool.id}')" class="primary-btn" style="width:100%; margin-top:10px;">عرض التفاصيل والدفع والتوثيق 📜</button>
+      <p style="color:#94a3b8; font-size:0.85rem; margin: 10px 0;">👥 عدد الأعضاء: <strong>${pool.moneypool_members?.length || 0} عضو</strong></p>
+      <button onclick="openPoolDetails('${pool.id}')" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; border:none; padding:10px; border-radius:10px; width:100%; font-weight:600; cursor:pointer;">عرض التفاصيل والدفع والتوثيق ✨</button>
     `;
     poolsList.appendChild(card);
   });
@@ -658,49 +687,49 @@ window.openPoolDetails = async function(poolId) {
 
   modalContent.innerHTML = `
     <div style="padding: 10px; font-family: sans-serif;">
-      <h2>تفاصيل جمعية: ${pool.title}</h2>
-      <p style="color:#94a3b8;">مبلغ القسط: <strong>${money(pool.installment_amount)}</strong> (${pool.cycle_period})</p>
+      <h2 style="color:#f8fafc; margin-bottom:6px;">تفاصيل جمعية: ${pool.title}</h2>
+      <p style="color:#94a3b8; font-size:0.9rem;">مبلغ القسط: <strong style="color:#34d399;">${money(pool.installment_amount)}</strong> (${pool.cycle_period})</p>
       
       ${isOwner ? `
-        <div style="background: rgba(59,130,246,0.1); padding:10px; border-radius:8px; margin-bottom:15px;">
-          <h4>إضافة عضو جديد للجمعية 👤</h4>
-          <input type="text" id="addMemberUsername" placeholder="اسم المستخدم (Username)" style="padding:6px; margin-bottom:6px; width:100%;"/>
-          <input type="text" id="addMemberNationalId" placeholder="الرقم القومي للعضو (14 رقم)" style="padding:6px; margin-bottom:6px; width:100%;"/>
-          <input type="text" id="addMemberPayoutMethod" placeholder="طريقة الاستلام (فودافون كاش / بنك...)" style="padding:6px; margin-bottom:6px; width:100%;"/>
-          <input type="text" id="addMemberPayoutAccount" placeholder="رقم المحفظة / الحساب للاستلام" style="padding:6px; margin-bottom:6px; width:100%;"/>
-          <button onclick="addMemberToPool('${pool.id}')" style="background:#22c55e; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;">إضافة العضو رسمياً</button>
+        <div style="background: rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:12px; margin:15px 0;">
+          <h4 style="color:#facc15; margin:0 0 10px 0;">إضافة عضو جديد للجمعية 👤</h4>
+          <input type="text" id="addMemberUsername" placeholder="اسم المستخدم (Username)" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
+          <input type="text" id="addMemberNationalId" placeholder="الرقم القومي للعضو (14 رقم)" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
+          <input type="text" id="addMemberPayoutMethod" placeholder="طريقة الاستلام (فودافون كاش / بنك...)" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
+          <input type="text" id="addMemberPayoutAccount" placeholder="رقم المحفظة / الحساب للاستلام" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
+          <button onclick="addMemberToPool('${pool.id}')" style="background:#10b981; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-weight:600; cursor:pointer; width:100%;">إضافة العضو رسمياً ✨</button>
         </div>
       ` : ''}
 
-      <h3>جدول الأعضاء والدفع والتوثيق 📋</h3>
+      <h3 style="color:#f8fafc; font-size:1rem; margin-top:15px;">جدول الأعضاء والدفع والتوثيق 📋</h3>
       <div style="overflow-x:auto;">
-        <table style="width:100%; text-align:right; border-collapse:collapse; margin-top:10px; font-size:0.85rem;">
+        <table style="width:100%; text-align:right; border-collapse:collapse; margin-top:10px; font-size:0.85rem; color:#f8fafc;">
           <thead>
-            <tr style="background:#334155; color:#fff;">
-              <th style="padding:8px;">العضو</th>
-              <th style="padding:8px;">الرقم القومي</th>
-              <th style="padding:8px;">حالة دفع اليوم</th>
-              <th style="padding:8px;">حالة الاستلام</th>
-              <th style="padding:8px;">الإجراءات</th>
+            <tr style="background:#1e293b; color:#94a3b8;">
+              <th style="padding:8px; border-bottom:1px solid #334155;">العضو</th>
+              <th style="padding:8px; border-bottom:1px solid #334155;">الرقم القومي</th>
+              <th style="padding:8px; border-bottom:1px solid #334155;">حالة الدوري</th>
+              <th style="padding:8px; border-bottom:1px solid #334155;">التوثيق</th>
+              <th style="padding:8px; border-bottom:1px solid #334155;">الإجراءات</th>
             </tr>
           </thead>
           <tbody>
             ${(pool.moneypool_members || []).map(m => `
-              <tr style="border-bottom: 1px solid #475569;">
+              <tr style="border-bottom: 1px solid #334155;">
                 <td style="padding:8px;">${m.username}</td>
                 <td style="padding:8px;">${m.national_id}</td>
                 <td style="padding:8px;">
-                  ${m.payout_status ? 'تم القبض 👑' : 'منتظر دور الاستلام'}
+                  ${m.payout_status ? '<span style="color:#facc15;">تم القبض 👑</span>' : '<span style="color:#94a3b8;">منتظر دور الاستلام</span>'}
                 </td>
                 <td style="padding:8px;">
-                  ${m.payout_confirmed_by_member ? 'مؤكد وموثق ✅' : 'لم يستلم بعد'}
+                  ${m.payout_confirmed_by_member ? '<span style="color:#34d399;">مؤكد ✅</span>' : '<span style="color:#f87171;">غير مؤكد</span>'}
                 </td>
                 <td style="padding:8px;">
                   ${m.user_id === currentUser.id ? `
-                    <button onclick="memberPayInstallment('${pool.id}', '${m.id}')" style="background:#3b82f6; color:#fff; border:none; padding:4px 8px; border-radius:4px;">سداد وإرفاق إثبات 📤</button>
+                    <button onclick="memberPayInstallment('${pool.id}', '${m.id}')" style="background:#2563eb; color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem;">سداد وإرفاق إثبات 📤</button>
                   ` : ''}
                   ${isOwner && !m.payout_status ? `
-                    <button onclick="ownerHandoverPool('${pool.id}', '${m.id}')" style="background:#eab308; color:#fff; border:none; padding:4px 8px; border-radius:4px;">تسليم المبلغ 💰</button>
+                    <button onclick="ownerHandoverPool('${pool.id}', '${m.id}')" style="background:#eab308; color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem;">تسليم المبلغ 💰</button>
                   ` : ''}
                 </td>
               </tr>
@@ -708,7 +737,7 @@ window.openPoolDetails = async function(poolId) {
           </tbody>
         </table>
       </div>
-      <button onclick="exportPoolPDF('${pool.id}')" style="background:#0284c7; color:#fff; border:none; padding:10px 15px; border-radius:6px; width:100%; margin-top:15px; cursor:pointer;">تصدير تقرير PDF توثيقي للمقاضاة والإثبات 🖨️</button>
+      <button onclick="exportPoolPDF('${pool.id}')" style="background:#0284c7; color:#fff; border:none; padding:10px 15px; border-radius:10px; width:100%; margin-top:15px; font-weight:600; cursor:pointer;">تصدير تقرير PDF توثيقي 🖨️</button>
     </div>
   `;
 
@@ -722,7 +751,7 @@ window.addMemberToPool = async function(poolId) {
   const account = document.getElementById('addMemberPayoutAccount')?.value.trim();
 
   if (!username || !nationalId || nationalId.length !== 14 || !method || !account) {
-    alert('يرجى ملء جميع الحانات وتأكيد أن الرقم القومي مكون من 14 رقم!');
+    alert('يرجى ملء جميع الخانات وتأكيد أن الرقم القومي مكون من 14 رقم!');
     return;
   }
 
@@ -825,7 +854,7 @@ async function loadCreditHistory() {
   }
 
   if (!data || data.length === 0) {
-    creditHistoryList.innerHTML = '<p class="empty-text">لا توجد طلبات شحن كريدت سابقة.</p>';
+    creditHistoryList.innerHTML = '<p class="empty-text" style="color:#94a3b8; text-align:center; padding:15px 0;">لا توجد طلبات شحن كريدت سابقة.</p>';
     return;
   }
 
@@ -839,12 +868,12 @@ async function loadCreditHistory() {
 
     const dateStr = new Date(req.created_at).toLocaleDateString('ar-EG');
     return `
-      <div class="history-item" style="background:rgba(30,41,59,0.5); padding:10px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between;">
+      <div class="history-item" style="background:rgba(30,41,59,0.5); border:1px solid rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <strong>طلب شحن بقيمة ${req.amount} ج.م</strong>
+          <strong style="color:#f8fafc;">طلب شحن بقيمة ${req.amount} ج.م</strong>
           <br/><small style="color:#94a3b8;">من رقم: ${req.sender_phone} بتاريخ (${dateStr})</small>
         </div>
-        <span class="status-tag ${statusClass}">${statusText}</span>
+        <span class="status-tag ${statusClass}" style="font-size:0.8rem; font-weight:600;">${statusText}</span>
       </div>
     `;
   }).join('');
