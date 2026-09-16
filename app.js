@@ -1,79 +1,109 @@
 /* =========================================================
-   تطبيق تحويشتي - Tahweesha (Master Edition)
-   Multi-Plan, Moneypools with Legal Verification & Credits System
+   تحويشتي - Tahweesha
+   MASTER EDITION
+   Supabase + Multi Plans + Tabs + Credits + Moneypools
    ========================================================= */
 
 const SUPABASE_URL = "https://iupgijqisikfsikgsjfg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_fCADiUYIL0cs2c2QpcynEw_qmMc-qJ3";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_fCADiUYIL0cs2c2QpcynEw_qmMc-qJ3";
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const sb = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
-// ==========================================
-// 1. عناصر الواجهة (DOM Elements)
-// ==========================================
-const authView = document.getElementById('authView');
-const appView = document.getElementById('appView');
-const userArea = document.getElementById('userArea');
-const userEmail = document.getElementById('userEmail');
-const userCreditsDisplay = document.getElementById('userCreditsDisplay');
-const streakDisplay = document.getElementById('streakDisplay');
+/* =========================================================
+   1. DOM
+   ========================================================= */
 
-const authMessage = document.getElementById('authMessage');
-const planMessage = document.getElementById('planMessage');
-const poolMessage = document.getElementById('poolMessage');
+const authView = document.getElementById("authView");
+const appView = document.getElementById("appView");
+const userArea = document.getElementById("userArea");
 
-// القائمة الجانبية والشريط السفلي (Navigation & Tabs)
-const tabButtons = document.querySelectorAll('.nav-btn, .sidebar-link');
-const tabSections = document.querySelectorAll('.tab-content');
+const userEmail = document.getElementById("userEmail");
+const userCreditsDisplay = document.getElementById("userCreditsDisplay");
+const streakDisplay = document.getElementById("streakDisplay");
 
-// عناصر التحويش
-const grid = document.getElementById('grid');
-const emptyState = document.getElementById('emptyState');
-const remainingEl = document.getElementById('remaining');
-const targetTotalEl = document.getElementById('targetTotal');
-const progressWrap = document.getElementById('progressWrap');
-const progressBar = document.getElementById('progressBar');
-const progressPercent = document.getElementById('progressPercent');
-const targetInput = document.getElementById('targetAmount');
-const boxesSelect = document.getElementById('boxesCount');
-const plansList = document.getElementById('plansList');
+const authMessage = document.getElementById("authMessage");
+const planMessage = document.getElementById("planMessage");
+const poolMessage = document.getElementById("poolMessage");
 
-// إحصائيات بصرية
-const totalSavedStat = document.getElementById('totalSavedStat');
-const activePlansStat = document.getElementById('activePlansStat');
-const highestPlanStat = document.getElementById('highestPlanStat');
+const sidebarLinks = document.querySelectorAll(".sidebar-link");
+const bottomLinks = document.querySelectorAll(".bottom-nav-link");
+const allTabButtons = document.querySelectorAll(
+  ".sidebar-link, .bottom-nav-link"
+);
 
-// الجمعيات (Moneypools)
-const poolsList = document.getElementById('poolsList');
-const createPoolBtn = document.getElementById('createPoolBtn');
-const poolDetailsModal = document.getElementById('poolDetailsModal');
+const tabSections = document.querySelectorAll(".tab-content");
+const bottomNav = document.getElementById("bottomNav");
 
-// المعاينة والطباعة
-const printPreviewModal = document.getElementById('printPreviewModal');
-const confirmPrintBtn = document.getElementById('confirmPrintBtn');
-const closePrintPreviewBtn = document.getElementById('closePrintPreviewBtn');
+const grid = document.getElementById("grid");
+const emptyState = document.getElementById("emptyState");
 
-// شراء الكريدت
-const copyPhoneBtn = document.getElementById('copyPhoneBtn');
-const sendCreditReqBtn = document.getElementById('sendCreditReqBtn');
-const creditHistoryList = document.getElementById('creditHistoryList');
+const remainingEl = document.getElementById("remaining");
+const targetTotalEl = document.getElementById("targetTotal");
 
-// النوافذ المنبثقة والإنعاش
-const celebrationModal = document.getElementById('celebrationModal');
-const closeCelebrationBtn = document.getElementById('closeCelebrationBtn');
-const termsCheckbox = document.getElementById('termsCheckbox');
+const progressWrap = document.getElementById("progressWrap");
+const progressBar = document.getElementById("progressBar");
+const progressPercent = document.getElementById("progressPercent");
 
-// ==========================================
-// 2. المتغيرات العامة (State Management)
-// ==========================================
+const targetInput = document.getElementById("targetAmount");
+const boxesSelect = document.getElementById("boxesCount");
+const plansList = document.getElementById("plansList");
+
+const totalSavedStat = document.getElementById("totalSavedStat");
+const activePlansStat = document.getElementById("activePlansStat");
+const highestPlanStat = document.getElementById("highestPlanStat");
+
+const poolsList = document.getElementById("poolsList");
+const createPoolBtn = document.getElementById("createPoolBtn");
+
+const poolDetailsModal = document.getElementById("poolDetailsModal");
+const poolModalDetailsContent = document.getElementById(
+  "poolModalDetailsContent"
+);
+
+const printPreviewModal = document.getElementById("printPreviewModal");
+const printPreviewContent = document.getElementById("printPreviewContent");
+
+const confirmPrintBtn = document.getElementById("confirmPrintBtn");
+const closePrintPreviewBtn = document.getElementById(
+  "closePrintPreviewBtn"
+);
+
+const copyPhoneBtn = document.getElementById("copyPhoneBtn");
+const sendCreditReqBtn = document.getElementById("sendCreditReqBtn");
+const creditHistoryList = document.getElementById("creditHistoryList");
+
+const celebrationModal = document.getElementById("celebrationModal");
+const closeCelebrationBtn = document.getElementById(
+  "closeCelebrationBtn"
+);
+
+const termsCheckbox = document.getElementById("termsCheckbox");
+const authForm = document.getElementById("authForm");
+const logoutBtn = document.getElementById("logoutBtn");
+const generateBtn = document.getElementById("generateBtn");
+
+/* =========================================================
+   2. STATE
+   ========================================================= */
+
 let currentUser = null;
 let currentPlan = null;
+
 let allPlans = [];
 let items = [];
+
 let userCredits = 20;
 let userStreak = 0;
+
 let celebrationShown = false;
 let currentPools = [];
+
+let activeTab = "dashboard";
+let tabLoading = false;
 
 const MOTIVATIONAL_QUOTES = {
   0: "بداية الألف ميل تبدأ بخطوة واحدة! يلا نبدأ تحويش 🚀",
@@ -83,107 +113,308 @@ const MOTIVATIONAL_QUOTES = {
   100: "ألف مبروك! حققت الهدف وجمعت تحويشتك كاملاً 👑🎉"
 };
 
-// ==========================================
-// 3. الدوال المساعدة (Helpers)
-// ==========================================
-function money(n) { return `${Number(n || 0).toLocaleString('ar-EG')} ج`; }
+/* =========================================================
+   3. HELPERS
+   ========================================================= */
 
-function setMessage(el, text, ok = false) { 
-  if (!el) return;
-  el.textContent = text || ''; 
-  el.style.color = ok ? '#86efac' : '#f87171'; 
+function money(value) {
+  return `${Number(value || 0).toLocaleString("ar-EG")} ج`;
 }
 
-function randomShuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) { 
-    const j = Math.floor(Math.random() * (i + 1)); 
-    [a[i], a[j]] = [a[j], a[i]]; 
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function setMessage(element, text, success = false) {
+  if (!element) return;
+
+  element.textContent = text || "";
+
+  if (!text) {
+    element.style.color = "";
+    return;
   }
-  return a;
+
+  element.style.color = success ? "#86efac" : "#f87171";
 }
 
-// ==========================================
-// 4. إدارة نظام التنقل والتبويبات (Navigation & Tabs)
-// ==========================================
-tabButtons?.forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const targetTab = btn.getAttribute('data-tab');
-    if (!targetTab) return;
+function shuffle(array) {
+  const arr = [...array];
 
-    tabButtons.forEach(b => b.classList.remove('active'));
-    tabSections.forEach(s => s.classList.add('hidden'));
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
 
-    // تفعيل كل الأزرار المرتبطة بنفس التاب
-    document.querySelectorAll(`[data-tab="${targetTab}"]`).forEach(b => b.classList.add('active'));
+  return arr;
+}
 
-    const activeSection = document.getElementById(`tab-${targetTab}`);
-    if (activeSection) activeSection.classList.remove('hidden');
+function setButtonLoading(button, loading, loadingText = "جاري التحميل...") {
+  if (!button) return;
 
-    // تحميل البيانات الخاصة بالتاب
-    if (targetTab === 'pools') loadMoneypools();
-    if (targetTab === 'credits') loadCreditHistory();
-    if (targetTab === 'dashboard') updateDashboardStats();
+  if (loading) {
+    button.dataset.originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = loadingText;
+    button.style.opacity = "0.65";
+    button.style.pointerEvents = "none";
+  } else {
+    button.disabled = false;
+    button.textContent =
+      button.dataset.originalText || button.textContent;
+    button.style.opacity = "";
+    button.style.pointerEvents = "";
+  }
+}
+
+/* =========================================================
+   4. TAB SYSTEM
+   ========================================================= */
+
+function getSavedTab() {
+  try {
+    const saved = localStorage.getItem("tahweesha_active_tab");
+
+    const allowedTabs = [
+      "dashboard",
+      "saving",
+      "pools",
+      "credits"
+    ];
+
+    return allowedTabs.includes(saved) ? saved : "dashboard";
+  } catch {
+    return "dashboard";
+  }
+}
+
+function saveActiveTab(tab) {
+  try {
+    localStorage.setItem("tahweesha_active_tab", tab);
+  } catch {
+    // تجاهل الخطأ لو LocalStorage غير متاح
+  }
+}
+
+async function switchTab(tab, save = true) {
+  const allowedTabs = [
+    "dashboard",
+    "saving",
+    "pools",
+    "credits"
+  ];
+
+  if (!allowedTabs.includes(tab)) {
+    tab = "dashboard";
+  }
+
+  activeTab = tab;
+
+  if (save) {
+    saveActiveTab(tab);
+  }
+
+  /* إزالة Active من كل الأزرار */
+  allTabButtons.forEach((button) => {
+    const buttonTab = button.dataset.tab;
+    const isActive = buttonTab === tab;
+
+    button.classList.toggle("active", isActive);
+
+    button.setAttribute(
+      "aria-selected",
+      isActive ? "true" : "false"
+    );
+
+    if (isActive) {
+      button.setAttribute("tabindex", "0");
+    } else {
+      button.setAttribute("tabindex", "-1");
+    }
+  });
+
+  /* إخفاء كل الصفحات */
+  tabSections.forEach((section) => {
+    const sectionTab = section.id.replace("tab-", "");
+
+    section.classList.toggle(
+      "hidden",
+      sectionTab !== tab
+    );
+
+    section.setAttribute(
+      "aria-hidden",
+      sectionTab === tab ? "false" : "true"
+    );
+  });
+
+  /* إظهار Bottom Nav فقط داخل التطبيق */
+  if (bottomNav) {
+    bottomNav.classList.remove("hidden");
+  }
+
+  /* تحميل بيانات التاب */
+  if (currentUser) {
+    if (tab === "dashboard") {
+      updateDashboardStats();
+    }
+
+    if (tab === "saving") {
+      if (currentPlan) {
+        render();
+      } else {
+        await loadAllPlans();
+      }
+    }
+
+    if (tab === "pools") {
+      await loadMoneypools();
+    }
+
+    if (tab === "credits") {
+      await loadCreditHistory();
+    }
+  }
+}
+
+/* ربط Sidebar + Mobile Bottom Nav */
+allTabButtons.forEach((button) => {
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const tab = button.dataset.tab;
+
+    if (!tab || tabLoading) return;
+
+    tabLoading = true;
+
+    try {
+      await switchTab(tab);
+    } finally {
+      tabLoading = false;
+    }
   });
 });
 
-// ==========================================
-// 5. نظام الكريدت ورصيد الحساب (Credits System)
-// ==========================================
+/* =========================================================
+   5. CREDITS
+   ========================================================= */
+
 async function fetchUserCredits() {
   if (!currentUser) return;
+
+  /*
+     نحاول الحصول على الكريدت من أول خطة.
+     لو لا توجد خطة، نستخدم 20 كريدت.
+  */
+
   const { data, error } = await sb
-    .from('savings_plans')
-    .select('user_credits')
-    .eq('user_id', currentUser.id)
+    .from("savings_plans")
+    .select("user_credits")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
 
-  if (data && data.user_credits !== undefined) {
-    userCredits = data.user_credits;
+  if (!error && data && data.user_credits !== null) {
+    userCredits = Number(data.user_credits);
   } else {
-    userCredits = 20; // الافتراضي للحساب الجديد
+    userCredits = 20;
   }
 
-  if (userCreditsDisplay) userCreditsDisplay.textContent = `${userCredits} كريدت`;
+  updateCreditsUI();
 }
 
-async function deductCredits(amount, reason = '') {
+function updateCreditsUI() {
+  if (userCreditsDisplay) {
+    userCreditsDisplay.textContent = `${userCredits} كريدت`;
+  }
+}
+
+async function deductCredits(amount, reason = "") {
+  if (!currentUser) {
+    alert("يجب تسجيل الدخول أولاً.");
+    return false;
+  }
+
+  amount = Number(amount);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return false;
+  }
+
   if (userCredits < amount) {
-    alert(`عفواً! رصيدك غير كافٍ. تحتاج إلى ${amount} كريدت لتنفيذ هذه العملية. يمكنك الشحن من تاب "شراء الكريدت".`);
+    alert(
+      `رصيدك غير كافٍ.\n\nتحتاج ${amount} كريدت.\nرصيدك الحالي ${userCredits} كريدت.`
+    );
+
     return false;
   }
 
   const newCredits = userCredits - amount;
+
+  /*
+     تحديث كل خطط المستخدم حتى يظل الرصيد متزامناً
+     مع النظام الحالي.
+  */
+
   const { error } = await sb
-    .from('savings_plans')
-    .update({ user_credits: newCredits })
-    .eq('user_id', currentUser.id);
+    .from("savings_plans")
+    .update({
+      user_credits: newCredits
+    })
+    .eq("user_id", currentUser.id);
 
   if (error) {
-    console.error('فشل خصم الكريدت:', error.message);
+    console.error("Credit deduction error:", error);
+
+    alert(
+      "حدث خطأ أثناء خصم الكريدت. لم يتم الخصم."
+    );
+
     return false;
   }
 
   userCredits = newCredits;
-  if (userCreditsDisplay) userCreditsDisplay.textContent = `${userCredits} كريدت`;
+  updateCreditsUI();
+
+  console.log(
+    `Credits deducted: ${amount}`,
+    reason
+  );
+
   return true;
 }
 
-// ==========================================
-// 6. خوارزمية تقسيم مبالغ التحويش
-// ==========================================
+/* =========================================================
+   6. SAVING COMBINATION
+   ========================================================= */
+
 function makeCombination(total, targetBoxes) {
-  if (total < targetBoxes * 20 || !Number.isInteger(total)) return null;
+  total = Number(total);
+  targetBoxes = Number(targetBoxes);
+
+  if (!Number.isInteger(total)) return null;
+
+  if (total < targetBoxes * 20) {
+    return null;
+  }
 
   let denoms = [20, 50, 100, 200, 250];
-  if (total > 10000) denoms.push(300, 500);
+
+  if (total > 10000) {
+    denoms.push(300, 500);
+  }
 
   let counts = {
-    20: Math.floor(targetBoxes * 0.30),
-    50: Math.floor(targetBoxes * 0.20),
-    100: Math.floor(targetBoxes * 0.20),
+    20: Math.floor(targetBoxes * 0.3),
+    50: Math.floor(targetBoxes * 0.2),
+    100: Math.floor(targetBoxes * 0.2),
     200: Math.floor(targetBoxes * 0.15),
     250: Math.floor(targetBoxes * 0.15)
   };
@@ -191,783 +422,1175 @@ function makeCombination(total, targetBoxes) {
   if (total > 10000) {
     counts[300] = Math.floor(targetBoxes * 0.05);
     counts[500] = Math.floor(targetBoxes * 0.05);
+
     counts[20] = Math.floor(targetBoxes * 0.25);
     counts[50] = Math.floor(targetBoxes * 0.15);
   }
 
-  let currentBoxesCount = Object.values(counts).reduce((a, b) => a + b, 0);
-  while (currentBoxesCount < targetBoxes) {
+  let count = Object.values(counts)
+    .reduce((a, b) => a + b, 0);
+
+  while (count < targetBoxes) {
     counts[20]++;
-    currentBoxesCount++;
+    count++;
   }
 
   let result = [];
-  for (const [denom, count] of Object.entries(counts)) {
-    for (let i = 0; i < count; i++) {
+
+  for (const [denom, amount] of Object.entries(counts)) {
+    for (let i = 0; i < amount; i++) {
       result.push(Number(denom));
     }
   }
 
-  let currentSum = result.reduce((a, b) => a + b, 0);
+  let currentSum = result.reduce(
+    (sum, value) => sum + value,
+    0
+  );
+
   let diff = total - currentSum;
-  let safetyLoop = 0;
 
-  while (diff !== 0 && safetyLoop < 3000) {
-    safetyLoop++;
-    const idx = Math.floor(Math.random() * result.length);
-    const currentVal = result[idx];
+  let safety = 0;
 
-    if (diff > 0) {
-      const nextDenom = denoms.find(d => d > currentVal && (d - currentVal) <= diff);
-      if (nextDenom) {
-        diff -= (nextDenom - currentVal);
-        result[idx] = nextDenom;
+  while (diff !== 0 && safety < 10000) {
+    safety++;
+
+    let changed = false;
+
+    for (let i = 0; i < result.length; i++) {
+      const current = result[i];
+
+      if (diff > 0) {
+        const next = denoms.find(
+          (d) =>
+            d > current &&
+            d - current <= diff
+        );
+
+        if (next) {
+          diff -= next - current;
+          result[i] = next;
+          changed = true;
+          break;
+        }
       }
-    } else if (diff < 0) {
-      const neededSub = Math.abs(diff);
-      const prevDenom = [...denoms].reverse().find(d => d < currentVal && (currentVal - d) <= neededSub);
-      if (prevDenom) {
-        diff += (currentVal - prevDenom);
-        result[idx] = prevDenom;
+
+      if (diff < 0) {
+        const previous = [...denoms]
+          .reverse()
+          .find(
+            (d) =>
+              d < current &&
+              current - d <= Math.abs(diff)
+          );
+
+        if (previous) {
+          diff += current - previous;
+          result[i] = previous;
+          changed = true;
+          break;
+        }
       }
     }
+
+    if (!changed) break;
   }
 
-  return randomShuffle(result);
+  if (diff !== 0) {
+    return null;
+  }
+
+  return shuffle(result);
 }
 
-// ==========================================
-// 7. عرض الجداول وتحديث الواجهة (Render Engine)
-// ==========================================
+/* =========================================================
+   7. RENDER
+   ========================================================= */
+
 function render() {
   if (!grid) return;
-  grid.innerHTML = '';
+
+  grid.innerHTML = "";
+
   renderPlansHeader();
-  
-  if (!items.length) { 
-    emptyState?.classList.remove('hidden'); 
-    progressWrap?.classList.add('hidden'); 
-    updateTotals(); 
-    return; 
+
+  if (!items.length) {
+    emptyState?.classList.remove("hidden");
+    progressWrap?.classList.add("hidden");
+
+    updateTotals();
+    return;
   }
 
-  emptyState?.classList.add('hidden'); 
-  progressWrap?.classList.remove('hidden');
+  emptyState?.classList.add("hidden");
+  progressWrap?.classList.remove("hidden");
 
-  items.forEach(item => {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'saving-card' + (item.checked ? ' checked' : '');
-    card.setAttribute('data-denom', item.denomination);
+  items.forEach((item) => {
+    const card = document.createElement("button");
+
+    card.type = "button";
+
+    card.className =
+      "saving-card" +
+      (item.checked ? " checked" : "");
+
+    card.dataset.id = item.id;
 
     card.innerHTML = `
-      <div class="denom">${item.denomination.toLocaleString('ar-EG')}<small> جنيه</small></div>
-      <div class="check-text">${item.checked ? 'تم التحويش ✓' : 'اضغط للتعليم ✓'}</div>
+      <div class="denom">
+        ${Number(item.denomination).toLocaleString("ar-EG")}
+        <small> جنيه</small>
+      </div>
+
+      <div class="check-text">
+        ${
+          item.checked
+            ? "تم التحويش ✓"
+            : "اضغط للتعليم ✓"
+        }
+      </div>
     `;
-    card.addEventListener('click', () => toggleItem(item.id));
+
+    card.addEventListener("click", () => {
+      toggleItem(item.id);
+    });
+
     grid.appendChild(card);
   });
 
   updateTotals();
 }
 
+/* =========================================================
+   8. PLANS HEADER
+   ========================================================= */
+
 function renderPlansHeader() {
   if (!plansList) return;
-  plansList.innerHTML = '';
-  if (!allPlans.length) return;
 
-  allPlans.forEach((p, i) => {
-    const card = document.createElement('div');
-    const isSelected = currentPlan?.id === p.id;
-    const planSaved = Number(p.current_amount || 0);
-    const planTarget = Number(p.target_amount || 1);
-    const planPercent = Math.min(100, Math.round((planSaved / planTarget) * 100));
+  plansList.innerHTML = "";
 
-    card.style.cssText = `
-      background: ${isSelected ? 'rgba(37, 99, 235, 0.15)' : 'rgba(30, 41, 59, 0.7)'};
-      border: 1px solid ${isSelected ? '#3b82f6' : 'rgba(255,255,255,0.08)'};
-      padding: 14px; border-radius: 14px; margin-bottom: 12px;
-      display: flex; flex-direction: column; gap: 8px;
-    `;
+  if (!allPlans.length) {
+    return;
+  }
 
-    const planTitle = p.title || `تحويشة #${i + 1}`;
+  allPlans.forEach((plan, index) => {
+    const card = document.createElement("div");
+
+    const selected =
+      currentPlan?.id === plan.id;
+
+    const saved = Number(
+      plan.current_amount || 0
+    );
+
+    const target = Number(
+      plan.target_amount || 1
+    );
+
+    const percent = Math.min(
+      100,
+      Math.round((saved / target) * 100)
+    );
+
+    card.className =
+      `plan-selector-card ${selected ? "selected" : ""}`;
 
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <span style="color: #facc15; font-size: 0.9rem; font-weight: 700;">🎯 ${planTitle}</span>
-          <div style="color: #fff; font-size: 1.1rem; font-weight: 700; margin-top:2px;">${money(p.target_amount)}</div>
+      <div class="plan-selector-top">
+
+        <div class="plan-selector-info">
+          <span class="plan-selector-title">
+            🎯 ${escapeHTML(
+              plan.title || `تحويشة #${index + 1}`
+            )}
+          </span>
+
+          <strong>
+            ${money(plan.target_amount)}
+          </strong>
         </div>
-        <div style="display:flex; gap:6px;">
-          ${!isSelected ? `<button onclick="switchPlan('${p.id}')" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:600;">فتح 🔓</button>` : '<span style="background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:4px 8px; border-radius:6px; font-size:0.75rem;">نشط الآن ✨</span>'}
-          <button onclick="deletePlan('${p.id}')" style="background:rgba(239, 68, 68, 0.2); color:#f87171; border:1px solid rgba(239, 68, 68, 0.3); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem;">🗑️</button>
+
+        <div class="plan-selector-actions">
+
+          ${
+            !selected
+              ? `
+                <button
+                  type="button"
+                  class="plan-open-btn"
+                  data-plan-id="${escapeHTML(plan.id)}"
+                >
+                  فتح 🔓
+                </button>
+              `
+              : `
+                <span class="plan-active-badge">
+                  نشط الآن ✨
+                </span>
+              `
+          }
+
+          <button
+            type="button"
+            class="plan-delete-btn"
+            data-delete-plan="${escapeHTML(plan.id)}"
+          >
+            🗑️
+          </button>
+
         </div>
+
       </div>
-      
-      <!-- شريط إنجاز الخطة -->
-      <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:4px;">
-        <span>تم تحويش: ${money(planSaved)}</span>
-        <span style="color:#34d399; font-weight:bold;">${planPercent}%</span>
+
+      <div class="plan-progress-info">
+        <span>
+          تم تحويش: ${money(saved)}
+        </span>
+
+        <span>
+          ${percent}%
+        </span>
       </div>
-      <div style="background:rgba(255,255,255,0.1); height:6px; border-radius:3px; overflow:hidden;">
-        <div style="background: linear-gradient(90deg, #10b981, #34d399); width:${planPercent}%; height:100%; border-radius:3px;"></div>
+
+      <div class="plan-progress">
+        <div
+          class="plan-progress-bar"
+          style="width:${percent}%"
+        ></div>
       </div>
     `;
+
     plansList.appendChild(card);
   });
+
+  /* Open buttons */
+  plansList
+    .querySelectorAll(".plan-open-btn")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        switchPlan(button.dataset.planId);
+      });
+    });
+
+  /* Delete buttons */
+  plansList
+    .querySelectorAll("[data-delete-plan]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        deletePlan(button.dataset.deletePlan);
+      });
+    });
 }
 
-function updateTotals() {
-  const target = Number(currentPlan?.target_amount || 0);
-  const saved = items.filter(x => x.checked).reduce((s, x) => s + Number(x.denomination), 0);
-  const remaining = Math.max(0, target - saved);
-  const percent = target ? Math.min(100, Math.round((saved / target) * 100)) : 0;
+/* =========================================================
+   9. TOTALS
+   ========================================================= */
 
-  if (remainingEl) remainingEl.textContent = money(remaining);
-  if (targetTotalEl) targetTotalEl.textContent = money(target);
-  if (progressPercent) progressPercent.textContent = `${percent}%`;
-  if (progressBar) progressBar.style.width = `${percent}%`;
+function updateTotals() {
+  const target = Number(
+    currentPlan?.target_amount || 0
+  );
+
+  const saved = items
+    .filter((item) => item.checked)
+    .reduce(
+      (sum, item) =>
+        sum + Number(item.denomination),
+      0
+    );
+
+  const remaining = Math.max(
+    0,
+    target - saved
+  );
+
+  const percent = target
+    ? Math.min(
+        100,
+        Math.round((saved / target) * 100)
+      )
+    : 0;
+
+  if (remainingEl) {
+    remainingEl.textContent = money(remaining);
+  }
+
+  if (targetTotalEl) {
+    targetTotalEl.textContent = money(target);
+  }
+
+  if (progressPercent) {
+    progressPercent.textContent =
+      `${percent}%`;
+  }
+
+  if (progressBar) {
+    progressBar.style.width =
+      `${percent}%`;
+  }
 
   if (percent >= 100) {
-    progressBar?.classList.add('completed-gold');
-    if (!celebrationShown && items.length > 0) {
-      celebrationModal?.classList.remove('hidden');
+    progressBar?.classList.add(
+      "completed-gold"
+    );
+
+    if (
+      !celebrationShown &&
+      items.length > 0
+    ) {
+      celebrationModal?.classList.remove(
+        "hidden"
+      );
+
       celebrationShown = true;
     }
   } else {
-    progressBar?.classList.remove('completed-gold');
+    progressBar?.classList.remove(
+      "completed-gold"
+    );
+
     celebrationShown = false;
   }
 
-  if (items.length > 0) {
-    let currentQuote = MOTIVATIONAL_QUOTES[0];
-    if (percent >= 100) currentQuote = MOTIVATIONAL_QUOTES[100];
-    else if (percent >= 75) currentQuote = MOTIVATIONAL_QUOTES[75];
-    else if (percent >= 50) currentQuote = MOTIVATIONAL_QUOTES[50];
-    else if (percent >= 25) currentQuote = MOTIVATIONAL_QUOTES[25];
+  let quote =
+    MOTIVATIONAL_QUOTES[0];
 
-    setMessage(planMessage, currentQuote, true);
+  if (percent >= 100) {
+    quote = MOTIVATIONAL_QUOTES[100];
+  } else if (percent >= 75) {
+    quote = MOTIVATIONAL_QUOTES[75];
+  } else if (percent >= 50) {
+    quote = MOTIVATIONAL_QUOTES[50];
+  } else if (percent >= 25) {
+    quote = MOTIVATIONAL_QUOTES[25];
+  }
+
+  if (items.length) {
+    setMessage(
+      planMessage,
+      quote,
+      true
+    );
   }
 }
 
-// تحديث الإحصائيات مع النسب المئوية الكلية
-function updateDashboardStats() {
-  let totalSavedSum = 0;
-  let totalTargetSum = 0;
-  let maxTarget = 0;
+/* =========================================================
+   10. DASHBOARD
+   ========================================================= */
 
-  allPlans.forEach(p => {
-    totalSavedSum += Number(p.current_amount || 0);
-    totalTargetSum += Number(p.target_amount || 0);
-    if (Number(p.target_amount) > maxTarget) maxTarget = Number(p.target_amount);
+function updateDashboardStats() {
+  let totalSaved = 0;
+  let totalTarget = 0;
+  let highestTarget = 0;
+
+  allPlans.forEach((plan) => {
+    totalSaved += Number(
+      plan.current_amount || 0
+    );
+
+    totalTarget += Number(
+      plan.target_amount || 0
+    );
+
+    highestTarget = Math.max(
+      highestTarget,
+      Number(plan.target_amount || 0)
+    );
   });
 
-  const overallPercent = totalTargetSum > 0 
-    ? Math.min(100, Math.round((totalSavedSum / totalTargetSum) * 100)) 
-    : 0;
+  const percent =
+    totalTarget > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (totalSaved / totalTarget) * 100
+          )
+        )
+      : 0;
 
-  if (totalSavedStat) totalSavedStat.textContent = money(totalSavedSum);
-  if (activePlansStat) activePlansStat.textContent = allPlans.length.toString();
-  if (highestPlanStat) highestPlanStat.textContent = money(maxTarget);
-  if (streakDisplay) streakDisplay.textContent = `${userStreak} يوم 🔥`;
+  if (totalSavedStat) {
+    totalSavedStat.textContent =
+      money(totalSaved);
+  }
 
-  // تحديث النسبة المئوية وشريط التقدم في اللوحة العامة
-  const totalSavedBar = document.getElementById('totalSavedBar');
-  const totalSavedPercent = document.getElementById('totalSavedPercent');
+  if (activePlansStat) {
+    activePlansStat.textContent =
+      String(allPlans.length);
+  }
 
-  if (totalSavedBar) totalSavedBar.style.width = `${overallPercent}%`;
-  if (totalSavedPercent) totalSavedPercent.textContent = `${overallPercent}% من إجمالي الأهداف`;
+  if (highestPlanStat) {
+    highestPlanStat.textContent =
+      money(highestTarget);
+  }
+
+  if (streakDisplay) {
+    streakDisplay.textContent =
+      `🔥 ${userStreak} يوم`;
+  }
+
+  const totalSavedBar =
+    document.getElementById(
+      "totalSavedBar"
+    );
+
+  const totalSavedPercent =
+    document.getElementById(
+      "totalSavedPercent"
+    );
+
+  if (totalSavedBar) {
+    totalSavedBar.style.width =
+      `${percent}%`;
+  }
+
+  if (totalSavedPercent) {
+    totalSavedPercent.textContent =
+      `${percent}% من إجمالي الأهداف`;
+  }
 }
 
-// ==========================================
-// 8. تحميل وإنشاء جداول التحويش (Plans Logic)
-// ==========================================
+/* =========================================================
+   11. LOAD PLANS
+   ========================================================= */
+
 async function loadAllPlans() {
-  const { data: plans, error } = await sb
-    .from('savings_plans')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false });
+  if (!currentUser) return;
 
-  if (error) { setMessage(planMessage, error.message); return; }
+  const { data, error } = await sb
+    .from("savings_plans")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("created_at", {
+      ascending: false
+    });
 
-  allPlans = plans || [];
-  updateDashboardStats();
+  if (error) {
+    console.error(error);
+
+    setMessage(
+      planMessage,
+      "حدث خطأ أثناء تحميل التحويشات: " +
+        error.message
+    );
+
+    return;
+  }
+
+  allPlans = data || [];
 
   if (!allPlans.length) {
     currentPlan = null;
     items = [];
+
     render();
+    updateDashboardStats();
+
     return;
   }
 
-  if (!currentPlan || !allPlans.find(p => p.id === currentPlan.id)) {
+  if (
+    !currentPlan ||
+    !allPlans.some(
+      (plan) =>
+        plan.id === currentPlan.id
+    )
+  ) {
     currentPlan = allPlans[0];
+  } else {
+    currentPlan =
+      allPlans.find(
+        (plan) =>
+          plan.id === currentPlan.id
+      ) || allPlans[0];
   }
 
-  await loadPlanItems(currentPlan.id);
+  updateDashboardStats();
+
+  await loadPlanItems(
+    currentPlan.id
+  );
 }
 
 async function loadPlanItems(planId) {
-  const { data: rows, error } = await sb
-    .from('savings_items')
-    .select('*')
-    .eq('plan_id', planId)
-    .order('position');
+  if (!currentUser) return;
 
-  if (error) { setMessage(planMessage, error.message); return; }
+  const { data, error } = await sb
+    .from("savings_items")
+    .select("*")
+    .eq("plan_id", planId)
+    .eq("user_id", currentUser.id)
+    .order("position", {
+      ascending: true
+    });
 
-  items = rows || [];
+  if (error) {
+    setMessage(
+      planMessage,
+      "حدث خطأ أثناء تحميل الخانات: " +
+        error.message
+    );
+
+    return;
+  }
+
+  items = data || [];
+
   celebrationShown = false;
+
   render();
 }
 
+/* =========================================================
+   12. SWITCH PLAN
+   ========================================================= */
+
 window.switchPlan = async function(planId) {
-  currentPlan = allPlans.find(p => p.id === planId);
-  if (currentPlan) {
-    await loadPlanItems(planId);
-  }
-};
+  const plan = allPlans.find(
+    (item) =>
+      String(item.id) ===
+      String(planId)
+  );
 
-async function createPlan() {
-  setMessage(planMessage, '');
-  const amount = Number(targetInput.value);
-  const boxesCount = boxesSelect ? Number(boxesSelect.value) : 100;
-
-  if (allPlans.length >= 1) {
-    const confirmDeduct = confirm('الخطة الأولى مجانية! إنشاء خطة إضافية جديدة يستهلك 30 كريدت. هل تريد المتابعة؟');
-    if (!confirmDeduct) return;
-
-    const success = await deductCredits(30, 'إنشاء خطة تحويشة جديدة');
-    if (!success) return;
-  }
-
-  if (!Number.isInteger(amount) || amount < boxesCount * 20) {
-    setMessage(planMessage, `المبلغ يجب أن يكون رقماً صحيحاً ويبدأ من ${money(boxesCount * 20)} لجدول الـ ${boxesCount} خانة.`);
-    return;
-  }
-
-  const combo = makeCombination(amount, boxesCount);
-  if (!combo) {
-    setMessage(planMessage, 'تعذر تقسيم المبلغ على الخانات المحددة. اختر مبلغاً أكبر.');
-    return;
-  }
-
-  const userInputTitle = prompt('اكتب اسم التحويشة (مثلاً: موبايل جديد / سفرية العيد):');
-  const finalTitle = userInputTitle && userInputTitle.trim() !== '' ? userInputTitle.trim() : `تحويشة ${amount} ج`;
-
-  const { data: plan, error } = await sb
-    .from('savings_plans')
-    .insert({ 
-      user_id: currentUser.id, 
-      title: finalTitle,
-      target_amount: amount, 
-      current_amount: 0,
-      user_credits: userCredits
-    })
-    .select()
-    .single();
-
-  if (error) { setMessage(planMessage, error.message); return; }
-
-  const rows = combo.map((d, i) => ({
-    plan_id: plan.id,
-    user_id: currentUser.id,
-    denomination: d,
-    position: i,
-    checked: false
-  }));
-
-  const { error: itemErr } = await sb.from('savings_items').insert(rows);
-  if (itemErr) { setMessage(planMessage, itemErr.message); return; }
+  if (!plan) return;
 
   currentPlan = plan;
-  await loadAllPlans();
-  setMessage(planMessage, `تم إنشاء خطة (${finalTitle}) بنجاح ✨ بالتوفيق يا بطل!`, true);
+
+  await loadPlanItems(plan.id);
+
+  await switchTab(
+    "saving",
+    false
+  );
+};
+
+/* =========================================================
+   13. CREATE PLAN
+   ========================================================= */
+
+async function createPlan() {
+  if (!currentUser) {
+    alert("سجل الدخول أولاً.");
+    return;
+  }
+
+  setMessage(planMessage, "");
+
+  const amount = Number(
+    targetInput?.value
+  );
+
+  const boxesCount = Number(
+    boxesSelect?.value || 100
+  );
+
+  if (
+    !Number.isInteger(amount) ||
+    amount <= 0
+  ) {
+    setMessage(
+      planMessage,
+      "اكتب مبلغاً صحيحاً."
+    );
+
+    return;
+  }
+
+  if (
+    amount <
+    boxesCount * 20
+  ) {
+    setMessage(
+      planMessage,
+      `المبلغ يجب أن يكون ${money(
+        boxesCount * 20
+      )} على الأقل لعدد ${boxesCount} خانة.`
+    );
+
+    return;
+  }
+
+  /* تأكد من إمكانية التقسيم قبل الخصم */
+  const combo =
+    makeCombination(
+      amount,
+      boxesCount
+    );
+
+  if (!combo) {
+    setMessage(
+      planMessage,
+      "تعذر تقسيم المبلغ على الخانات المحددة. جرّب مبلغاً آخر."
+    );
+
+    return;
+  }
+
+  /* تحديد الاسم */
+  const titleInput = prompt(
+    "اكتب اسم التحويشة:",
+    `تحويشة ${amount} ج`
+  );
+
+  const finalTitle =
+    titleInput?.trim() ||
+    `تحويشة ${amount} ج`;
+
+  let creditDeducted = false;
+
+  /* الخطة الأولى مجانية */
+  if (allPlans.length >= 1) {
+    const accepted = confirm(
+      "الخطة الأولى مجانية.\n\n" +
+      "إنشاء خطة إضافية سيخصم 30 كريدت.\n\n" +
+      "هل تريد الاستمرار؟"
+    );
+
+    if (!accepted) return;
+
+    const success =
+      await deductCredits(
+        30,
+        "إنشاء خطة إضافية"
+      );
+
+    if (!success) return;
+
+    creditDeducted = true;
+  }
+
+  setButtonLoading(
+    generateBtn,
+    true,
+    "جاري إنشاء الخطة..."
+  );
+
+  try {
+    const { data: plan, error } =
+      await sb
+        .from("savings_plans")
+        .insert({
+          user_id: currentUser.id,
+          title: finalTitle,
+          target_amount: amount,
+          current_amount: 0,
+          user_credits: userCredits
+        })
+        .select()
+        .single();
+
+    if (error) {
+      /*
+         لو تم خصم الكريدت ثم فشل الإنشاء،
+         نبلغ المستخدم ولا نحاول عمل Refund
+         من الواجهة مباشرة.
+      */
+
+      console.error(error);
+
+      if (creditDeducted) {
+        alert(
+          "تم خصم الكريدت لكن حدث خطأ أثناء إنشاء الخطة. راجع قاعدة البيانات أو نظام الإدارة."
+        );
+      }
+
+      setMessage(
+        planMessage,
+        error.message
+      );
+
+      return;
+    }
+
+    const rows = combo.map(
+      (denomination, position) => ({
+        plan_id: plan.id,
+        user_id: currentUser.id,
+        denomination,
+        position,
+        checked: false
+      })
+    );
+
+    const { error: itemError } =
+      await sb
+        .from("savings_items")
+        .insert(rows);
+
+    if (itemError) {
+      console.error(itemError);
+
+      setMessage(
+        planMessage,
+        "تم إنشاء الخطة لكن حدث خطأ أثناء إنشاء الخانات: " +
+          itemError.message
+      );
+
+      return;
+    }
+
+    currentPlan = plan;
+
+    await loadAllPlans();
+
+    setMessage(
+      planMessage,
+      `تم إنشاء "${finalTitle}" بنجاح ✨`,
+      true
+    );
+
+    if (targetInput) {
+      targetInput.value = "";
+    }
+
+    await switchTab(
+      "saving",
+      false
+    );
+  } finally {
+    setButtonLoading(
+      generateBtn,
+      false
+    );
+  }
 }
 
+/* =========================================================
+   14. TOGGLE SAVING ITEM
+   ========================================================= */
+
 async function toggleItem(id) {
-  const item = items.find(x => x.id === id);
+  if (!currentUser || !currentPlan) {
+    return;
+  }
+
+  const item = items.find(
+    (x) => String(x.id) === String(id)
+  );
+
   if (!item) return;
 
-  const next = !item.checked;
-  item.checked = next;
+  const oldValue = item.checked;
+  const newValue = !oldValue;
 
-  const saved = items.filter(x => x.checked).reduce((s, x) => s + Number(x.denomination), 0);
+  item.checked = newValue;
+
+  /* Optimistic UI */
   render();
 
   const { error } = await sb
-    .from('savings_items')
-    .update({ checked: next })
-    .eq('id', id)
-    .eq('user_id', currentUser.id);
+    .from("savings_items")
+    .update({
+      checked: newValue
+    })
+    .eq("id", id)
+    .eq("user_id", currentUser.id);
 
   if (error) {
-    item.checked = !next;
+    item.checked = oldValue;
+
     render();
-    setMessage(planMessage, error.message);
+
+    setMessage(
+      planMessage,
+      "تعذر حفظ التغيير: " +
+        error.message
+    );
+
     return;
   }
 
-  await sb
-    .from('savings_plans')
-    .update({ current_amount: saved })
-    .eq('id', currentPlan.id);
+  const saved = items
+    .filter((x) => x.checked)
+    .reduce(
+      (sum, x) =>
+        sum + Number(x.denomination),
+      0
+    );
 
-  if (currentPlan) currentPlan.current_amount = saved;
+  const { error: planError } =
+    await sb
+      .from("savings_plans")
+      .update({
+        current_amount: saved
+      })
+      .eq(
+        "id",
+        currentPlan.id
+      )
+      .eq(
+        "user_id",
+        currentUser.id
+      );
+
+  if (planError) {
+    console.error(
+      "Plan update error:",
+      planError
+    );
+  }
+
+  currentPlan.current_amount =
+    saved;
+
+  const index =
+    allPlans.findIndex(
+      (p) =>
+        p.id === currentPlan.id
+    );
+
+  if (index !== -1) {
+    allPlans[index].current_amount =
+      saved;
+  }
+
   updateDashboardStats();
 }
 
+/* =========================================================
+   15. DELETE PLAN
+   ========================================================= */
+
 window.deletePlan = async function(planId) {
-  if (!confirm('هل أنت تأكد من حذف هذه التحويشة؟')) return;
+  if (!currentUser) return;
+
+  const plan =
+    allPlans.find(
+      (p) =>
+        String(p.id) ===
+        String(planId)
+    );
+
+  if (!plan) return;
+
+  const confirmed = confirm(
+    `هل أنت متأكد من حذف "${plan.title}"؟\n\nلا يمكن التراجع عن العملية.`
+  );
+
+  if (!confirmed) return;
 
   const { error } = await sb
-    .from('savings_plans')
+    .from("savings_plans")
     .delete()
-    .eq('id', planId)
-    .eq('user_id', currentUser.id);
+    .eq("id", planId)
+    .eq("user_id", currentUser.id);
 
   if (error) {
-    alert('حدث خطأ أثناء الحذف: ' + error.message);
+    alert(
+      "حدث خطأ أثناء الحذف:\n" +
+        error.message
+    );
+
     return;
+  }
+
+  if (
+    currentPlan &&
+    String(currentPlan.id) ===
+      String(planId)
+  ) {
+    currentPlan = null;
+    items = [];
   }
 
   await loadAllPlans();
-  setMessage(planMessage, 'تم حذف التحويشة بنجاح! 🚀', true);
+
+  setMessage(
+    planMessage,
+    "تم حذف التحويشة بنجاح.",
+    true
+  );
 };
 
-// ==========================================
-// 9. وضع المعاينة والطباعة (Print & Preview)
-// ==========================================
-document.getElementById('previewPrintBtn')?.addEventListener('click', () => {
-  if (!currentPlan || !items.length) {
-    alert('اختر خطة تحويشة قائمة أولاً لتظهر لك المعاينة.');
+/* =========================================================
+   16. PRINT PREVIEW
+   ========================================================= */
+
+document
+  .getElementById("previewPrintBtn")
+  ?.addEventListener("click", () => {
+    if (
+      !currentPlan ||
+      !items.length
+    ) {
+      alert(
+        "اختر خطة تحويشة أولاً."
+      );
+
+      return;
+    }
+
+    if (!printPreviewContent) {
+      return;
+    }
+
+    printPreviewContent.innerHTML = `
+      <div class="print-preview-inner">
+
+        <h2>
+          جدول تحويشتي
+        </h2>
+
+        <h3>
+          ${escapeHTML(
+            currentPlan.title
+          )}
+        </h3>
+
+        <p>
+          الهدف:
+          <strong>
+            ${money(
+              currentPlan.target_amount
+            )}
+          </strong>
+        </p>
+
+        <p>
+          عدد الخانات:
+          <strong>
+            ${items.length}
+          </strong>
+        </p>
+
+        <div class="print-grid">
+          ${items
+            .map(
+              (item) => `
+                <div class="print-box">
+                  <strong>
+                    ${Number(
+                      item.denomination
+                    ).toLocaleString(
+                      "ar-EG"
+                    )} ج
+                  </strong>
+
+                  <small>
+                    ${
+                      item.checked
+                        ? "✓ تم التحويش"
+                        : "☐ لم يتم"
+                    }
+                  </small>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+
+      </div>
+    `;
+
+    printPreviewModal?.classList.remove(
+      "hidden"
+    );
+  });
+
+closePrintPreviewBtn?.addEventListener(
+  "click",
+  () => {
+    printPreviewModal?.classList.add(
+      "hidden"
+    );
+  }
+);
+
+confirmPrintBtn?.addEventListener(
+  "click",
+  async () => {
+    if (!currentPlan) return;
+
+    const accepted = confirm(
+      "الطباعة تستهلك 10 كريدت.\nهل تريد الاستمرار؟"
+    );
+
+    if (!accepted) return;
+
+    const success =
+      await deductCredits(
+        10,
+        "طباعة جدول التحويشة"
+      );
+
+    if (!success) return;
+
+    printPreviewModal?.classList.add(
+      "hidden"
+    );
+
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  }
+);
+
+/* =========================================================
+   17. MONEYPOOLS
+   ========================================================= */
+
+async function loadMoneypools() {
+  if (!currentUser || !poolsList) {
     return;
   }
 
-  const previewContent = document.getElementById('printPreviewContent');
-  if (!previewContent) return;
-
-  previewContent.innerHTML = `
-    <div style="text-align:center; padding: 20px; font-family: sans-serif;">
-      <h2>جدول تحويشتي - ${currentPlan.title}</h2>
-      <p>الهدف الإجمالي: <strong>${money(currentPlan.target_amount)}</strong> | خانات: <strong>${items.length}</strong></p>
-      <hr style="margin: 15px 0; border: 0.5px solid #ccc;" />
-      <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
-        ${items.map(it => `
-          <div style="border: 1px solid #000; padding: 10px; border-radius: 6px; width: 70px; text-align: center;">
-            <strong>${it.denomination} ج</strong>
-            <br/><small>${it.checked ? '[✓]' : '[  ]'}</small>
-          </div>
-        `).join('')}
-      </div>
-    </div>
+  poolsList.innerHTML = `
+    <p class="empty-text">
+      جاري تحميل الجمعيات...
+    </p>
   `;
 
-  printPreviewModal?.classList.remove('hidden');
-});
-
-closePrintPreviewBtn?.addEventListener('click', () => printPreviewModal?.classList.add('hidden'));
-
-confirmPrintBtn?.addEventListener('click', async () => {
-  const ok = confirm('الطباعة تستهلك 10 كريدتس. هل تود الاستمرار وتوليد الملف؟');
-  if (!ok) return;
-
-  const success = await deductCredits(10, 'طباعة جدول التحويشة');
-  if (!success) return;
-
-  printPreviewModal?.classList.add('hidden');
-  window.print();
-});
-
-// ==========================================
-// 10. نظام الجمعيات التوثيقي (Moneypools Logic)
-// ==========================================
-async function loadMoneypools() {
-  if (!currentUser) return;
-  setMessage(poolMessage, '');
-
-  const { data: pools, error } = await sb
-    .from('moneypools')
+  const { data, error } = await sb
+    .from("moneypools")
     .select(`
       *,
       moneypool_members (*)
     `)
-    .order('created_at', { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
-    setMessage(poolMessage, 'حدث خطأ أثناء تحميل الجمعيات: ' + error.message);
+    poolsList.innerHTML = "";
+
+    setMessage(
+      poolMessage,
+      "حدث خطأ أثناء تحميل الجمعيات: " +
+        error.message
+    );
+
     return;
   }
 
-  currentPools = pools || [];
+  currentPools = data || [];
+
   renderMoneypools();
 }
 
 function renderMoneypools() {
   if (!poolsList) return;
-  poolsList.innerHTML = '';
+
+  poolsList.innerHTML = "";
 
   if (!currentPools.length) {
-    poolsList.innerHTML = '<p class="empty-text" style="color:#94a3b8; text-align:center; padding:20px 0;">لا توجد جمعيات قائمة حالياً. أنشئ جمعيتك الأولى وانقل المعاملات لمستوى رسمي ومحمي! 📜</p>';
+    poolsList.innerHTML = `
+      <p class="empty-text">
+        لا توجد جمعيات قائمة حالياً.
+      </p>
+    `;
+
     return;
   }
 
-  currentPools.forEach(pool => {
-    const isOwner = pool.owner_id === currentUser.id;
-    const card = document.createElement('div');
-    card.className = 'pool-card';
-    card.style.cssText = `
-      background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 16px; margin-bottom: 16px;
-    `;
+  currentPools.forEach((pool) => {
+    const card =
+      document.createElement(
+        "div"
+      );
+
+    card.className =
+      "pool-card";
+
+    const isOwner =
+      pool.owner_id ===
+      currentUser.id;
+
+    const membersCount =
+      pool.moneypool_members
+        ?.length || 0;
 
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:#facc15; margin:0; font-size:1.1rem;">📜 ${pool.title} ${isOwner ? '<span style="font-size:0.7rem; background:#2563eb; color:#fff; padding:2px 6px; border-radius:4px; margin-right:6px;">صاحب الجمعية</span>' : ''}</h3>
-        <span style="color:#34d399; font-weight:bold; font-size:0.95rem;">${money(pool.installment_amount)} / ${pool.cycle_period}</span>
+      <div class="pool-card-top">
+
+        <div>
+          <h3>
+            📜 ${escapeHTML(
+              pool.title
+            )}
+          </h3>
+
+          ${
+            isOwner
+              ? `
+                <span class="owner-badge">
+                  صاحب الجمعية
+                </span>
+              `
+              : ""
+          }
+        </div>
+
+        <strong>
+          ${money(
+            pool.installment_amount
+          )}
+          /
+          ${escapeHTML(
+            pool.cycle_period
+          )}
+        </strong>
+
       </div>
-      <p style="color:#94a3b8; font-size:0.85rem; margin: 10px 0;">👥 عدد الأعضاء: <strong>${pool.moneypool_members?.length || 0} عضو</strong></p>
-      <button onclick="openPoolDetails('${pool.id}')" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; border:none; padding:10px; border-radius:10px; width:100%; font-weight:600; cursor:pointer;">عرض التفاصيل والدفع والتوثيق ✨</button>
+
+      <p>
+        👥 عدد الأعضاء:
+        <strong>
+          ${membersCount}
+        </strong>
+      </p>
+
+      <button
+        type="button"
+        class="pool-open-btn"
+        data-pool-id="${escapeHTML(
+          pool.id
+        )}"
+      >
+        عرض التفاصيل ✨
+      </button>
     `;
+
     poolsList.appendChild(card);
   });
-}
 
-createPoolBtn?.addEventListener('click', async () => {
-  const title = prompt('ادخل اسم الجمعية (مثال: جمعية الأصحاب / جمعية العيلة):');
-  if (!title) return;
-
-  const amount = prompt('ادخل مبلغ القسط لكل عضو (مثال: 500):');
-  if (!amount || isNaN(amount)) return;
-
-  const nationalId = prompt('ادخل رقمك القومي المكون من 14 رقم (للتوثيق والالتزام القانوني):');
-  if (!nationalId || nationalId.length !== 14) {
-    alert('الرقم القومي يجب أن يتكون من 14 رقم بالضبط!');
-    return;
-  }
-
-  const period = prompt('اختر دورة الدفع (أسبوع / أسبوعين / شهر):', 'شهر');
-
-  const { data: pool, error } = await sb
-    .from('moneypools')
-    .insert({
-      owner_id: currentUser.id,
-      owner_national_id: nationalId,
-      title: title,
-      installment_amount: Number(amount),
-      cycle_period: period || 'شهر'
-    })
-    .select()
-    .single();
-
-  if (error) return alert('حدث خطأ أثناء إدراج الجمعية: ' + error.message);
-
-  await sb.from('moneypool_members').insert({
-    pool_id: pool.id,
-    user_id: currentUser.id,
-    username: currentUser.email.split('@')[0],
-    national_id: nationalId,
-    payout_method: 'نقداً / محفظة',
-    payout_number_or_account: 'حساب الأدمن',
-    role: 'editor'
-  });
-
-  alert('تم إنشاء الجمعية التوثيقية بنجاح! يمكنك الآن إضافة الأصدقاء عن طريق اسم المستخدم (Username).');
-  loadMoneypools();
-});
-
-window.openPoolDetails = async function(poolId) {
-  const pool = currentPools.find(p => p.id === poolId);
-  if (!pool) return;
-
-  const isOwner = pool.owner_id === currentUser.id;
-  const modalContent = document.getElementById('poolModalDetailsContent');
-  if (!modalContent) return;
-
-  modalContent.innerHTML = `
-    <div style="padding: 10px; font-family: sans-serif;">
-      <h2 style="color:#f8fafc; margin-bottom:6px;">تفاصيل جمعية: ${pool.title}</h2>
-      <p style="color:#94a3b8; font-size:0.9rem;">مبلغ القسط: <strong style="color:#34d399;">${money(pool.installment_amount)}</strong> (${pool.cycle_period})</p>
-      
-      ${isOwner ? `
-        <div style="background: rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:12px; margin:15px 0;">
-          <h4 style="color:#facc15; margin:0 0 10px 0;">إضافة عضو جديد للجمعية 👤</h4>
-          <input type="text" id="addMemberUsername" placeholder="اسم المستخدم (Username)" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
-          <input type="text" id="addMemberNationalId" placeholder="الرقم القومي للعضو (14 رقم)" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
-          <input type="text" id="addMemberPayoutMethod" placeholder="طريقة الاستلام (فودافون كاش / بنك...)" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
-          <input type="text" id="addMemberPayoutAccount" placeholder="رقم المحفظة / الحساب للاستلام" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;"/>
-          <button onclick="addMemberToPool('${pool.id}')" style="background:#10b981; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-weight:600; cursor:pointer; width:100%;">إضافة العضو رسمياً ✨</button>
-        </div>
-      ` : ''}
-
-      <h3 style="color:#f8fafc; font-size:1rem; margin-top:15px;">جدول الأعضاء والدفع والتوثيق 📋</h3>
-      <div style="overflow-x:auto;">
-        <table style="width:100%; text-align:right; border-collapse:collapse; margin-top:10px; font-size:0.85rem; color:#f8fafc;">
-          <thead>
-            <tr style="background:#1e293b; color:#94a3b8;">
-              <th style="padding:8px; border-bottom:1px solid #334155;">العضو</th>
-              <th style="padding:8px; border-bottom:1px solid #334155;">الرقم القومي</th>
-              <th style="padding:8px; border-bottom:1px solid #334155;">حالة الدوري</th>
-              <th style="padding:8px; border-bottom:1px solid #334155;">التوثيق</th>
-              <th style="padding:8px; border-bottom:1px solid #334155;">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(pool.moneypool_members || []).map(m => `
-              <tr style="border-bottom: 1px solid #334155;">
-                <td style="padding:8px;">${m.username}</td>
-                <td style="padding:8px;">${m.national_id}</td>
-                <td style="padding:8px;">
-                  ${m.payout_status ? '<span style="color:#facc15;">تم القبض 👑</span>' : '<span style="color:#94a3b8;">منتظر دور الاستلام</span>'}
-                </td>
-                <td style="padding:8px;">
-                  ${m.payout_confirmed_by_member ? '<span style="color:#34d399;">مؤكد ✅</span>' : '<span style="color:#f87171;">غير مؤكد</span>'}
-                </td>
-                <td style="padding:8px;">
-                  ${m.user_id === currentUser.id ? `
-                    <button onclick="memberPayInstallment('${pool.id}', '${m.id}')" style="background:#2563eb; color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem;">سداد وإرفاق إثبات 📤</button>
-                  ` : ''}
-                  ${isOwner && !m.payout_status ? `
-                    <button onclick="ownerHandoverPool('${pool.id}', '${m.id}')" style="background:#eab308; color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem;">تسليم المبلغ 💰</button>
-                  ` : ''}
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-      <button onclick="exportPoolPDF('${pool.id}')" style="background:#0284c7; color:#fff; border:none; padding:10px 15px; border-radius:10px; width:100%; margin-top:15px; font-weight:600; cursor:pointer;">تصدير تقرير PDF توثيقي 🖨️</button>
-    </div>
-  `;
-
-  poolDetailsModal?.classList.remove('hidden');
-};
-
-window.addMemberToPool = async function(poolId) {
-  const username = document.getElementById('addMemberUsername')?.value.trim();
-  const nationalId = document.getElementById('addMemberNationalId')?.value.trim();
-  const method = document.getElementById('addMemberPayoutMethod')?.value.trim();
-  const account = document.getElementById('addMemberPayoutAccount')?.value.trim();
-
-  if (!username || !nationalId || nationalId.length !== 14 || !method || !account) {
-    alert('يرجى ملء جميع الخانات وتأكيد أن الرقم القومي مكون من 14 رقم!');
-    return;
-  }
-
-  const { error } = await sb.from('moneypool_members').insert({
-    pool_id: poolId,
-    username: username,
-    national_id: nationalId,
-    payout_method: method,
-    payout_number_or_account: account,
-    role: 'viewer'
-  });
-
-  if (error) return alert('حدث خطأ في إضافة العضو: ' + error.message);
-
-  alert('تم إضافة العضو بنجاح!');
-  poolDetailsModal?.classList.add('hidden');
-  loadMoneypools();
-};
-
-window.memberPayInstallment = async function(poolId, memberId) {
-  const proofUrl = prompt('يرجى وضع رابط سكرين شوت التحويل أو صورة الإثبات:');
-  if (!proofUrl) return alert('إرفاق الإثبات إجباري لضمان حقك وحق الجمعية!');
-
-  const { error } = await sb.from('moneypool_payments').insert({
-    pool_id: poolId,
-    member_id: memberId,
-    payment_date: new Date().toISOString().split('T')[0],
-    paid_by_member: true,
-    payment_proof_url: proofUrl,
-    confirmed_by_owner: false
-  });
-
-  if (error) return alert('حدث خطأ أثناء تسجيل الدفع: ' + error.message);
-  alert('تم تسجيل عملية الدفع وإرفاق السكرين شوت! ينتظر الآن تأكيد صاحب الجمعية.');
-};
-
-window.ownerHandoverPool = async function(poolId, memberId) {
-  const proofUrl = prompt('ضع رابط صورة إثبات تسليم المبلغ كاملاً للعضو (صورة الفلوس / تحويل المحفظة):');
-  if (!proofUrl) return alert('إرفاق صورة الإثبات إجباري لتأكيد تسليم المبلغ!');
-
-  const { error } = await sb.from('moneypool_members').update({
-    payout_status: true,
-    payout_proof_url: proofUrl
-  }).eq('id', memberId);
-
-  if (error) return alert('حدث خطأ: ' + error.message);
-  alert('تم تسجيل تسليم الجمعية! سيطلب النظام الآن من العضو تأكيد الاستلام رسمياً.');
-  poolDetailsModal?.classList.add('hidden');
-  loadMoneypools();
-};
-
-window.exportPoolPDF = function(poolId) {
-  alert('جاري إعداد وتجميع التقرير التوثيقي المكتمل للطباعة أو الحفظ بصيغة PDF...');
-  window.print();
-};
-
-// ==========================================
-// 11. تاب شراء الكريدت عبر We Pay
-// ==========================================
-copyPhoneBtn?.addEventListener('click', () => {
-  navigator.clipboard.writeText('01558488193');
-  alert('تم نسخ رقم We Pay بنجاح: 01558488193 📋');
-});
-
-sendCreditReqBtn?.addEventListener('click', async () => {
-  const senderPhone = document.getElementById('wePaySenderPhone')?.value.trim();
-  const selectedPackage = document.querySelector('input[name="creditPack"]:checked')?.value;
-
-  if (!currentUser) return alert('يرجى تسجيل الدخول أولاً.');
-  if (!senderPhone || senderPhone.length < 11) return alert('يرجى إدخال رقم موبايل صحيح مكون من 11 رقم.');
-
-  const { error } = await sb
-    .from('premium_requests')
-    .insert({
-      user_id: currentUser.id,
-      user_email: currentUser.email,
-      amount: Number(selectedPackage || 20),
-      sender_phone: senderPhone,
-      status: 'pending'
+  poolsList
+    .querySelectorAll(
+      "[data-pool-id]"
+    )
+    .forEach((button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          openPoolDetails(
+            button.dataset.poolId
+          );
+        }
+      );
     });
-
-  if (error) return alert('حدث خطأ أثناء إرسال الطلب: ' + error.message);
-
-  alert('تم إرسال طلب الشحن بنجاح! سيتم مراجعة التحويل وإضافة الكريدت لحسابك فور التأكد.');
-  loadCreditHistory();
-});
-
-async function loadCreditHistory() {
-  if (!currentUser || !creditHistoryList) return;
-
-  const { data, error } = await sb
-    .from('premium_requests')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    creditHistoryList.innerHTML = `<p class="error-text">خطأ أثناء التحميل: ${error.message}</p>`;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    creditHistoryList.innerHTML = '<p class="empty-text" style="color:#94a3b8; text-align:center; padding:15px 0;">لا توجد طلبات شحن كريدت سابقة.</p>';
-    return;
-  }
-
-  creditHistoryList.innerHTML = data.map(req => {
-    let statusText = 'قيد المراجعة ⏳';
-    let statusClass = 'pending';
-    if (req.status === 'approved') {
-      statusText = 'مُفعل وتم إضافة الكريدت ✓';
-      statusClass = 'approved';
-    }
-
-    const dateStr = new Date(req.created_at).toLocaleDateString('ar-EG');
-    return `
-      <div class="history-item" style="background:rgba(30,41,59,0.5); border:1px solid rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <strong style="color:#f8fafc;">طلب شحن بقيمة ${req.amount} ج.م</strong>
-          <br/><small style="color:#94a3b8;">من رقم: ${req.sender_phone} بتاريخ (${dateStr})</small>
-        </div>
-        <span class="status-tag ${statusClass}" style="font-size:0.8rem; font-weight:600;">${statusText}</span>
-      </div>
-    `;
-  }).join('');
 }
 
-// ==========================================
-// 12. إدارة تسجيل الدخول وتوثيق الشروط
-// ==========================================
-async function login(mode) {
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  
-  const email = emailInput ? emailInput.value.trim() : '';
-  const password = passwordInput ? passwordInput.value : '';
-  
-  setMessage(authMessage, '');
+/* =========================================================
+   18. CREATE POOL
+   ========================================================= */
 
-  if (!email || !password) {
-    return setMessage(authMessage, 'يرجى كتابة البريد الإلكتروني وكلمة المرور بشكل صحيح');
-  }
-
-  if (mode === 'signup') {
-    if (termsCheckbox && !termsCheckbox.checked) {
-      return setMessage(authMessage, 'يجب الموافقة على الشروط والأحكام وبنود التوثيق القانوني وإنشاء الكريدت لتسجيل الحساب!');
+createPoolBtn?.addEventListener(
+  "click",
+  async () => {
+    if (!currentUser) {
+      alert(
+        "يجب تسجيل الدخول أولاً."
+      );
+      return;
     }
 
-    const { data, error } = await sb.auth.signUp({ email, password });
-    if (error) return setMessage(authMessage, error.message);
+    const title =
+      prompt(
+        "اسم الجمعية:"
+      )?.trim();
 
-    if (data?.user && data?.user?.identities?.length === 0) {
-      return setMessage(authMessage, 'هذا البريد الإلكتروني مُسجل بالفعل! جرب تسجيل الدخول.');
-    }
+    if (!title) return;
 
-    const { error: signInErr } = await sb.auth.signInWithPassword({ email, password });
-    if (signInErr) {
-      setMessage(authMessage, 'تم إنشاء الحساب ومعك 20 كريدت هدايا! تفقد بريدك لتأكيده.', true);
-    } else {
-      setMessage(authMessage, 'تم إنشاء الحساب وحصولك على 20 كريدت مجانية! 🚀', true);
-    }
-
-  } else {
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        setMessage(authMessage, 'البريد أو كلمة المرور غير صحيحة، أو الحساب غير مفعل.');
-      } else {
-        setMessage(authMessage, error.message);
-      }
-    }
-  }
-}
-
-document.getElementById('authForm')?.addEventListener('submit', e => {
-  e.preventDefault();
-  const submitter = e.submitter;
-  const mode = submitter && submitter.dataset && submitter.dataset.mode ? submitter.dataset.mode : 'login';
-  login(mode);
-});
-
-document.getElementById('logoutBtn')?.addEventListener('click', () => sb.auth.signOut());
-document.getElementById('generateBtn')?.addEventListener('click', createPlan);
-closeCelebrationBtn?.addEventListener('click', () => celebrationModal?.classList.add('hidden'));
-
-// ==========================================
-// 13. مراقبة حالة الجلسة والتطبيق
-// ==========================================
-async function showLoggedIn(user) {
-  currentUser = user;
-  authView.classList.add('hidden');
-  appView.classList.remove('hidden');
-  userArea.classList.remove('hidden');
-  if (userEmail) userEmail.textContent = user.email || 'مستخدم';
-  
-  await fetchUserCredits();
-  await loadAllPlans();
-}
-
-function showLoggedOut() {
-  currentUser = null;
-  currentPlan = null;
-  allPlans = [];
-  items = [];
-  authView.classList.remove('hidden');
-  appView.classList.add('hidden');
-  userArea.classList.add('hidden');
-}
-
-sb.auth.onAuthStateChange((_event, session) => {
-  if (session?.user) showLoggedIn(session.user);
-  else showLoggedOut();
-});
-
-(async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) showLoggedIn(session.user);
-  else showLoggedOut();
-})();
+    const amountInput =
+      prompt(
+        "مبلغ القسط لكل عضو:"
+      );
