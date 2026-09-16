@@ -1,6 +1,6 @@
 /* =========================================================
    تطبيق تحويشتي - Tahweesha
-   Full Logic + Tabs & Subscriptions Section
+   Full Logic + Glowing Effects & Completion Celebration
    ========================================================= */
 
 const SUPABASE_URL = "https://iupgijqisikfsikgsjfg.supabase.co";
@@ -37,15 +37,20 @@ const subBadge = document.getElementById('subBadge');
 const subDescription = document.getElementById('subDescription');
 const subHistory = document.getElementById('subHistory');
 
-// النافذة المنبثقة Modal
+// النافذة المنبثقة للترقية Modal
 const premiumModal = document.getElementById('premiumModal');
 const upgradeBtn = document.getElementById('upgradeBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const confirmPayBtn = document.getElementById('confirmPayBtn');
 
+// نافذة التهنئة بالإنجاز Celebration Modal
+const celebrationModal = document.getElementById('celebrationModal');
+const closeCelebrationBtn = document.getElementById('closeCelebrationBtn');
+
 let currentUser = null;
 let currentPlan = null;
 let items = [];
+let celebrationShown = false; // لمنع تكرار فتح النافذة تلقائياً
 
 const MOTIVATIONAL_QUOTES = {
   0: "بداية الألف ميل تبدأ بخطوة واحدة! يلا نبدأ تحويش 🚀",
@@ -168,6 +173,10 @@ function render() {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'saving-card' + (item.checked ? ' checked' : '');
+    
+    // ربط الفئة المالية بخاصية data-denom لتلوين الفئات
+    card.setAttribute('data-denom', item.denomination);
+
     card.innerHTML = `
       <div class="denom">${item.denomination.toLocaleString('ar-EG')}<small> جنيه</small></div>
       <div class="check-text">${item.checked ? 'تم التحويش ✓' : 'اضغط للتعليم ✓'}</div>
@@ -189,6 +198,18 @@ function updateTotals() {
   targetTotalEl.textContent = money(target);
   progressPercent.textContent = `${percent}%`;
   progressBar.style.width = `${percent}%`;
+
+  // تحويل لون الشريط إلى الذهبي المتوهج عند الوصول إلى 100%
+  if (percent >= 100) {
+    progressBar.classList.add('completed-gold');
+    if (!celebrationShown && items.length > 0) {
+      celebrationModal?.classList.remove('hidden');
+      celebrationShown = true;
+    }
+  } else {
+    progressBar.classList.remove('completed-gold');
+    celebrationShown = false;
+  }
 
   if (items.length > 0) {
     let currentQuote = MOTIVATIONAL_QUOTES[0];
@@ -225,6 +246,7 @@ async function loadPlan() {
 
   items = rows || [];
   targetInput.value = plan.target_amount;
+  celebrationShown = false; // إعادة تعيين التنبيه للرحلة الجديدة
   render();
 }
 
@@ -353,6 +375,7 @@ async function loadSubscriptions() {
 // فتح وإغلاق النوافذ
 upgradeBtn?.addEventListener('click', () => premiumModal?.classList.remove('hidden'));
 closeModalBtn?.addEventListener('click', () => premiumModal?.classList.add('hidden'));
+closeCelebrationBtn?.addEventListener('click', () => celebrationModal?.classList.add('hidden'));
 
 confirmPayBtn?.addEventListener('click', async () => {
   const selectedPlan = document.querySelector('input[name="plan"]:checked')?.value;
