@@ -11,11 +11,16 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- خلفيات التوهج الدائم Ambient Glowing Effects -->
   <div class="bg-glow glow-1"></div>
   <div class="bg-glow glow-2"></div>
 
   <header class="topbar">
+    <!-- توقيع التطوير أعلى اليمين -->
+    <div class="developer-tag">developed by SAM</div>
+    
     <div class="brand"><span class="brand-mark">ج</span><span>تحويشتي</span></div>
+    
     <div id="userArea" class="user-area hidden">
       <span id="userEmail"></span>
       <button id="logoutBtn" class="ghost-btn">تسجيل خروج</button>
@@ -146,6 +151,18 @@
         <button id="confirmPayBtn" class="primary-btn">تأكيد إرسال المبلغ</button>
         <button id="closeModalBtn" class="ghost-btn">إلغاء</button>
       </div>
+    </div>
+  </div>
+
+  <!-- نافذة التهنئة المنبثقة عند اكتمال الهدف 100% -->
+  <div id="celebrationModal" class="modal-overlay hidden">
+    <div class="modal-card celebration-card">
+      <div class="celebration-icon">🏆</div>
+      <h2 style="margin: 5px 0; font-size: 1.8rem; color: #f1c40f;">ألف مبروك يا بطل! 🎉</h2>
+      <p style="color: #cbd5e1; line-height: 1.7; margin-bottom: 25px;">
+        نجحت في إكمال تحويشتك بالكامل ووصلت للهدف! استمر في إنجازاتك واصنع خطة جديدة فوراً.
+      </p>
+      <button id="closeCelebrationBtn" class="btn-gold">استمرار 💪</button>
     </div>
   </div>
 
