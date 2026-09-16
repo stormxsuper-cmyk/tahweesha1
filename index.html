@@ -4,20 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f172a" />
+
   <title>تحويشتي | خطتك للتوفير والجمعيات التوثيقية</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
   <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
 
-  <!-- خلفيات التوهج -->
+  <!-- ==========================================
+       خلفيات التوهج
+       ========================================== -->
+
   <div class="bg-glow glow-1"></div>
   <div class="bg-glow glow-2"></div>
+
 
   <!-- ==========================================
        الشريط العلوي
@@ -31,14 +40,22 @@
         developed by SAM
       </div>
 
-      <div class="brand" id="brandBtn" style="cursor: pointer;">
+      <div
+        class="brand"
+        id="brandBtn"
+        style="cursor: pointer;"
+      >
         <span class="brand-mark">ج</span>
         <span>تحويشتي</span>
       </div>
 
     </div>
 
-    <!-- زر الثلاث شرط للموبايل -->
+
+    <!-- ========================================
+         زر Hamburger للموبايل
+         ======================================== -->
+
     <button
       id="mobileMenuBtn"
       class="mobile-menu-btn"
@@ -52,10 +69,18 @@
       <span></span>
     </button>
 
-    <!-- بيانات المستخدم -->
-    <div id="userArea" class="user-area hidden">
+
+    <!-- ========================================
+         بيانات المستخدم
+         ======================================== -->
+
+    <div
+      id="userArea"
+      class="user-area hidden"
+    >
 
       <div class="user-badges">
+
         <span
           id="streakDisplay"
           class="badge streak-badge"
@@ -71,11 +96,19 @@
         >
           20 كريدت
         </span>
+
       </div>
 
-      <span id="userEmail" class="user-email"></span>
+      <span
+        id="userEmail"
+        class="user-email"
+      ></span>
 
-      <button id="logoutBtn" class="ghost-btn">
+      <button
+        id="logoutBtn"
+        class="ghost-btn"
+        type="button"
+      >
         تسجيل خروج
       </button>
 
@@ -83,8 +116,10 @@
 
   </header>
 
+
   <!-- ==========================================
-       القائمة الجانبية للموبايل
+       قائمة الموبايل الجانبية
+       تفتح من اليمين
        ========================================== -->
 
   <div
@@ -98,17 +133,26 @@
       aria-label="قائمة التنقل"
     >
 
+      <!-- رأس القائمة -->
+
       <div class="mobile-drawer-header">
 
         <div class="mobile-drawer-brand">
 
-          <span class="brand-mark">ج</span>
+          <span class="brand-mark">
+            ج
+          </span>
 
           <div>
-            <div>تحويشتي</div>
+
+            <div>
+              تحويشتي
+            </div>
+
             <div class="mobile-drawer-subtitle">
               خطتك للتوفير والإنجاز
             </div>
+
           </div>
 
         </div>
@@ -124,6 +168,9 @@
 
       </div>
 
+
+      <!-- روابط القائمة -->
+
       <div class="mobile-nav-content">
 
         <span class="mobile-nav-label">
@@ -134,51 +181,82 @@
           id="mobileNav"
           class="mobile-nav-list"
           role="tablist"
+          aria-label="التنقل الرئيسي"
         >
 
           <button
+            type="button"
             class="mobile-nav-link active"
             data-tab="dashboard"
             role="tab"
             aria-selected="true"
           >
-            <span class="nav-icon">📊</span>
-            <span>الرئيسية والإحصائيات</span>
+            <span class="nav-icon">
+              📊
+            </span>
+
+            <span>
+              الرئيسية والإحصائيات
+            </span>
           </button>
 
+
           <button
+            type="button"
             class="mobile-nav-link"
             data-tab="saving"
             role="tab"
             aria-selected="false"
           >
-            <span class="nav-icon">🎯</span>
-            <span>جداول التحويش</span>
+            <span class="nav-icon">
+              🎯
+            </span>
+
+            <span>
+              جداول التحويش
+            </span>
           </button>
 
+
           <button
+            type="button"
             class="mobile-nav-link"
             data-tab="pools"
             role="tab"
             aria-selected="false"
           >
-            <span class="nav-icon">📜</span>
-            <span>جمعياتي</span>
+            <span class="nav-icon">
+              📜
+            </span>
+
+            <span>
+              جمعياتي
+            </span>
           </button>
 
+
           <button
+            type="button"
             class="mobile-nav-link"
             data-tab="credits"
             role="tab"
             aria-selected="false"
           >
-            <span class="nav-icon">💎</span>
-            <span>شراء الكريدت</span>
+            <span class="nav-icon">
+              💎
+            </span>
+
+            <span>
+              شراء الكريدت
+            </span>
           </button>
 
         </nav>
 
       </div>
+
+
+      <!-- أسفل القائمة -->
 
       <div class="mobile-drawer-footer">
         تحويشتي — كل خطوة تقرّبك من هدفك ✨
@@ -188,17 +266,26 @@
 
   </div>
 
+
   <!-- ==========================================
        المحتوى الرئيسي
        ========================================== -->
 
   <main class="main-layout">
 
-    <!-- شاشة تسجيل الدخول -->
 
-    <section id="authView" class="auth-card">
+    <!-- ========================================
+         شاشة تسجيل الدخول
+         ======================================== -->
 
-      <div class="hero-icon">💰</div>
+    <section
+      id="authView"
+      class="auth-card"
+    >
+
+      <div class="hero-icon">
+        💰
+      </div>
 
       <h1>
         اعمل خطتك وابدأ التحويش
@@ -208,6 +295,9 @@
         احفظ فلوسك، نظّم جمعياتك بضمان وتوثيق قانوني،
         وتحدّى نفسك في التوفير!
       </p>
+
+
+      <!-- نموذج تسجيل الدخول -->
 
       <form id="authForm">
 
@@ -219,6 +309,7 @@
           required
         />
 
+
         <input
           id="password"
           type="password"
@@ -227,6 +318,9 @@
           autocomplete="current-password"
           required
         />
+
+
+        <!-- الشروط -->
 
         <div class="terms-agreement">
 
@@ -241,18 +335,24 @@
             <span class="checkmark"></span>
 
             <span class="terms-text">
+
               أوافق على
+
               <a
                 href="#"
                 onclick="alert('الشروط تشمل الالتزام بالدفع في الجمعيات وإتاحة تقديم بيانات الرقم القومي للمقاضاة في حالة التخلف، مع الالتزام بنظام الكريدت.'); return false;"
               >
                 الشروط والأحكام وبنود التوثيق القانوني
               </a>
+
             </span>
 
           </label>
 
         </div>
+
+
+        <!-- أزرار الدخول -->
 
         <div class="auth-actions">
 
@@ -276,17 +376,28 @@
 
       </form>
 
-      <p id="authMessage" class="message"></p>
+
+      <p
+        id="authMessage"
+        class="message"
+      ></p>
 
     </section>
+
 
     <!-- ==========================================
          التطبيق
          ========================================== -->
 
-    <div id="appView" class="app-container hidden">
+    <div
+      id="appView"
+      class="app-container hidden"
+    >
 
-      <!-- Sidebar للكمبيوتر -->
+
+      <!-- ========================================
+           Sidebar الكمبيوتر
+           ======================================== -->
 
       <aside class="sidebar">
 
@@ -294,55 +405,95 @@
           id="sidebarNav"
           class="sidebar-nav"
           role="tablist"
+          aria-label="التنقل الرئيسي"
         >
 
           <button
+            type="button"
             class="sidebar-link active"
             data-tab="dashboard"
             role="tab"
             aria-selected="true"
           >
-            <span class="nav-icon">📊</span>
-            <span>الرئيسية والإحصائيات</span>
+
+            <span class="nav-icon">
+              📊
+            </span>
+
+            <span>
+              الرئيسية والإحصائيات
+            </span>
+
           </button>
 
+
           <button
+            type="button"
             class="sidebar-link"
             data-tab="saving"
             role="tab"
             aria-selected="false"
           >
-            <span class="nav-icon">🎯</span>
-            <span>جداول التحويش</span>
+
+            <span class="nav-icon">
+              🎯
+            </span>
+
+            <span>
+              جداول التحويش
+            </span>
+
           </button>
 
+
           <button
+            type="button"
             class="sidebar-link"
             data-tab="pools"
             role="tab"
             aria-selected="false"
           >
-            <span class="nav-icon">📜</span>
-            <span>جمعياتي (توثيق محمي)</span>
+
+            <span class="nav-icon">
+              📜
+            </span>
+
+            <span>
+              جمعياتي (توثيق محمي)
+            </span>
+
           </button>
 
+
           <button
+            type="button"
             class="sidebar-link"
             data-tab="credits"
             role="tab"
             aria-selected="false"
           >
-            <span class="nav-icon">💎</span>
-            <span>شراء الكريدت</span>
+
+            <span class="nav-icon">
+              💎
+            </span>
+
+            <span>
+              شراء الكريدت
+            </span>
+
           </button>
 
         </nav>
 
       </aside>
 
-      <!-- محتوى التبويبات -->
+
+      <!-- ========================================
+           محتوى التبويبات
+           ======================================== -->
 
       <section class="content-area">
+
 
         <!-- ======================================
              Dashboard
@@ -370,6 +521,7 @@
 
           </div>
 
+
           <div class="stats-grid">
 
             <div class="stat-card">
@@ -387,6 +539,7 @@
 
             </div>
 
+
             <div class="stat-card">
 
               <span class="stat-title">
@@ -401,6 +554,7 @@
               </strong>
 
             </div>
+
 
             <div class="stat-card">
 
@@ -420,6 +574,7 @@
           </div>
 
         </div>
+
 
         <!-- ======================================
              Saving
@@ -445,6 +600,7 @@
 
             </div>
 
+
             <div class="remaining-card">
 
               <span>
@@ -457,23 +613,32 @@
 
               <small>
                 من أصل
-                <b id="targetTotal">0 ج</b>
+                <b id="targetTotal">
+                  0 ج
+                </b>
               </small>
 
             </div>
 
           </div>
 
+
+          <!-- قائمة الخطط -->
+
           <div
             id="plansList"
             class="plans-list"
           ></div>
+
+
+          <!-- إنشاء خطة -->
 
           <div class="create-card">
 
             <label for="targetAmount">
               عايز تحوش كام وعلَى كام خانة؟
             </label>
+
 
             <div class="amount-row">
 
@@ -485,29 +650,50 @@
                 placeholder="المبلغ الكلي (مثال: 10000)"
               />
 
+
               <select
                 id="boxesCount"
                 class="boxes-select"
               >
-                <option value="50">50 خانة</option>
-                <option value="100" selected>100 خانة</option>
-                <option value="150">150 خانة</option>
-                <option value="200">200 خانة</option>
+
+                <option value="50">
+                  50 خانة
+                </option>
+
+                <option
+                  value="100"
+                  selected
+                >
+                  100 خانة
+                </option>
+
+                <option value="150">
+                  150 خانة
+                </option>
+
+                <option value="200">
+                  200 خانة
+                </option>
+
               </select>
+
 
               <button
                 id="generateBtn"
                 class="primary-btn"
+                type="button"
               >
                 اعمل تحويشتي 🔥
               </button>
 
             </div>
 
+
             <p class="hint">
               💡 الخطة الأولى مجانية 100%!
               إنشاء خطة إضافية جديدة يستهلك 30 كريدت.
             </p>
+
 
             <p
               id="planMessage"
@@ -515,6 +701,9 @@
             ></p>
 
           </div>
+
+
+          <!-- التقدم -->
 
           <div
             id="progressWrap"
@@ -535,25 +724,38 @@
 
               </div>
 
+
               <button
                 id="previewPrintBtn"
                 class="ghost-btn-sm"
+                type="button"
               >
                 معاينة وطباعة الجدول 🖨️
               </button>
 
             </div>
 
+
             <div class="progress">
-              <div id="progressBar"></div>
+
+              <div
+                id="progressBar"
+              ></div>
+
             </div>
 
           </div>
+
+
+          <!-- الخانات -->
 
           <div
             id="grid"
             class="grid"
           ></div>
+
+
+          <!-- الحالة الفارغة -->
 
           <div
             id="emptyState"
@@ -565,6 +767,7 @@
           </div>
 
         </div>
+
 
         <!-- ======================================
              Pools
@@ -590,30 +793,37 @@
 
             </div>
 
+
             <button
               id="createPoolBtn"
               class="primary-btn"
+              type="button"
             >
               + إنشاء جمعية جديدة
             </button>
 
           </div>
 
+
           <p
             id="poolMessage"
             class="message"
           ></p>
 
+
           <div
             id="poolsList"
             class="pools-list"
           >
+
             <p class="empty-text">
               جاري تحميل الجمعيات...
             </p>
+
           </div>
 
         </div>
+
 
         <!-- ======================================
              Credits
@@ -636,7 +846,11 @@
               وإنشاء الخطط الإضافية:
             </p>
 
+
+            <!-- باقات الكريدت -->
+
             <div class="plans-container">
+
 
               <label class="plan-option">
 
@@ -648,15 +862,19 @@
                 />
 
                 <div class="plan-info">
+
                   <span>
                     باقة البداية (20 كريدت)
                   </span>
+
                   <strong>
                     20 ج.م
                   </strong>
+
                 </div>
 
               </label>
+
 
               <label class="plan-option highlight">
 
@@ -667,15 +885,19 @@
                 />
 
                 <div class="plan-info">
+
                   <span>
                     الباقة التوفيرية (60 كريدت)
                   </span>
+
                   <strong>
                     50 ج.م
                   </strong>
+
                 </div>
 
               </label>
+
 
               <label class="plan-option">
 
@@ -686,23 +908,30 @@
                 />
 
                 <div class="plan-info">
+
                   <span>
                     باقة المحترفين (140 كريدت)
                   </span>
+
                   <strong>
                     100 ج.م
                   </strong>
+
                 </div>
 
               </label>
 
             </div>
 
+
+            <!-- تعليمات الدفع -->
+
             <div class="payment-instructions">
 
               <p>
                 قم بتحويل المبلغ المطلوب إلى رقم WE Pay التالي:
               </p>
+
 
               <div class="phone-box-wrap">
 
@@ -713,22 +942,28 @@
                 <button
                   id="copyPhoneBtn"
                   class="ghost-btn-sm"
+                  type="button"
                 >
                   نسخ الرقم 📋
                 </button>
 
               </div>
 
+
               <input
                 type="tel"
                 id="wePaySenderPhone"
                 placeholder="أدخل رقم الموبايل الذي حولت منه (11 رقم)"
+                inputmode="numeric"
+                maxlength="11"
                 required
               />
+
 
               <button
                 id="sendCreditReqBtn"
                 class="primary-btn"
+                type="button"
                 style="width:100%; margin-top:10px;"
               >
                 إرسال طلب التأكيد
@@ -736,19 +971,24 @@
 
             </div>
 
+
             <hr class="divider" />
+
 
             <h4>
               سجل طلبات الشحن والكريدت
             </h4>
 
+
             <div
               id="creditHistoryList"
               class="sub-history-list"
             >
+
               <p class="empty-text">
                 لا توجد طلبات شحن سابقة.
               </p>
+
             </div>
 
           </div>
@@ -761,8 +1001,9 @@
 
   </main>
 
+
   <!-- ==========================================
-       Modals
+       Modal تفاصيل الجمعية
        ========================================== -->
 
   <div
@@ -772,7 +1013,10 @@
 
     <div class="modal-card modal-large">
 
-      <div id="poolModalDetailsContent"></div>
+      <div
+        id="poolModalDetailsContent"
+      ></div>
+
 
       <div
         class="modal-actions"
@@ -780,6 +1024,7 @@
       >
 
         <button
+          type="button"
           onclick="document.getElementById('poolDetailsModal').classList.add('hidden')"
           class="ghost-btn"
         >
@@ -792,6 +1037,11 @@
 
   </div>
 
+
+  <!-- ==========================================
+       Modal معاينة الطباعة
+       ========================================== -->
+
   <div
     id="printPreviewModal"
     class="modal-overlay hidden"
@@ -799,23 +1049,34 @@
 
     <div class="modal-card modal-large">
 
-      <div id="printPreviewContent"></div>
+      <div
+        id="printPreviewContent"
+      ></div>
+
 
       <div
         class="modal-actions"
-        style="margin-top:20px; display:flex; gap:10px; justify-content:center;"
+        style="
+          margin-top:20px;
+          display:flex;
+          gap:10px;
+          justify-content:center;
+        "
       >
 
         <button
           id="confirmPrintBtn"
           class="primary-btn"
+          type="button"
         >
           تأكيد خصم 10 كريدت والطباعة 🖨️
         </button>
 
+
         <button
           id="closePrintPreviewBtn"
           class="ghost-btn"
+          type="button"
         >
           إلغاء المعاينة
         </button>
@@ -825,6 +1086,11 @@
     </div>
 
   </div>
+
+
+  <!-- ==========================================
+       Modal الاحتفال بإكمال الخطة
+       ========================================== -->
 
   <div
     id="celebrationModal"
@@ -837,22 +1103,34 @@
         🏆
       </div>
 
+
       <h2
-        style="margin: 5px 0; font-size: 1.8rem; color: #facc15;"
+        style="
+          margin:5px 0;
+          font-size:1.8rem;
+          color:#facc15;
+        "
       >
         ألف مبروك يا بطل! 🎉
       </h2>
 
+
       <p
-        style="color: #cbd5e1; line-height: 1.7; margin-bottom: 25px;"
+        style="
+          color:#cbd5e1;
+          line-height:1.7;
+          margin-bottom:25px;
+        "
       >
         نجحت في إكمال تحويشتك بالكامل ووصلت للهدف!
         استمر في إنجازاتك واصنع خطة جديدة فوراً.
       </p>
 
+
       <button
         id="closeCelebrationBtn"
         class="btn-gold"
+        type="button"
       >
         استمرار 💪
       </button>
@@ -861,15 +1139,22 @@
 
   </div>
 
-  <!-- Footer -->
+
+  <!-- ==========================================
+       Footer
+       ========================================== -->
 
   <footer>
     تحويشتي — كل علامة صح تقرّبك من هدفك خطوة.. استمر يا بطل ✨
   </footer>
 
-  <!-- Libraries -->
+
+  <!-- ==========================================
+       Libraries
+       ========================================== -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="app.js"></script>
 
 </body>
