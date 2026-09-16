@@ -205,10 +205,15 @@ function renderPlansHeader() {
       display: flex; justify-content: space-between; align-items: center;
     `;
 
+    const planTitle = p.title || `تحويشة #${i + 1}`;
+
     card.innerHTML = `
       <div>
-        <strong style="color: #fff;">${p.title || `تحويشة #${i + 1}`} (${money(p.target_amount)})</strong>
-        <div style="font-size: 0.8rem; color: #94a3b8;">تم تجميع: ${money(p.current_amount || 0)}</div>
+        <div style="color: #facc15; font-size: 0.85rem; font-weight: bold; margin-bottom: 2px;">
+          (${planTitle})
+        </div>
+        <strong style="color: #fff; font-size: 1.05rem;">${money(p.target_amount)}</strong>
+        <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">تم تجميع: ${money(p.current_amount || 0)}</div>
       </div>
       <div>
         ${currentPlan?.id !== p.id ? `<button onclick="switchPlan('${p.id}')" class="ghost-btn" style="margin-left: 8px;">فتح</button>` : ''}
@@ -270,7 +275,6 @@ async function loadAllPlans() {
     return;
   }
 
-  // إذا لم تكن هناك تحويشة محددة، نختار الأولى
   if (!currentPlan || !allPlans.find(p => p.id === currentPlan.id)) {
     currentPlan = allPlans[0];
   }
@@ -321,12 +325,16 @@ async function createPlan() {
     return;
   }
 
-  // 2. إدراج التحويشة في جدول savings_plans مع إضافة حقل title
+  // سؤال المستخدم عن اسم التحويشة
+  const userInputTitle = prompt('اكتب اسم التحويشة (مثلاً: موبايل جديد / سفرية العيد):');
+  const finalTitle = userInputTitle && userInputTitle.trim() !== '' ? userInputTitle.trim() : `تحويشة ${amount} ج`;
+
+  // 2. إدراج التحويشة في جدول savings_plans مع اسم التحويشة
   const { data: plan, error } = await sb
     .from('savings_plans')
     .insert({ 
       user_id: currentUser.id, 
-      title: `تحويشة ${amount} ج`,
+      title: finalTitle,
       target_amount: amount, 
       current_amount: 0 
     })
@@ -349,7 +357,7 @@ async function createPlan() {
 
   currentPlan = plan;
   await loadAllPlans();
-  setMessage(planMessage, `تم إنشاء خطة الـ ${boxesCount} خانة بنجاح ✨ بالتوفيق يا بطل!`, true);
+  setMessage(planMessage, `تم إنشاء خطة (${finalTitle}) بنجاح ✨ بالتوفيق يا بطل!`, true);
 }
 
 async function toggleItem(id) {
@@ -359,12 +367,10 @@ async function toggleItem(id) {
   const next = !item.checked;
   item.checked = next;
 
-  // حساب المجموع الجديد
   const saved = items.filter(x => x.checked).reduce((s, x) => s + Number(x.denomination), 0);
 
   render();
 
-  // 1. تحديث حالة الخانة
   const { error } = await sb
     .from('savings_items')
     .update({ checked: next })
@@ -378,7 +384,6 @@ async function toggleItem(id) {
     return;
   }
 
-  // 2. تحديث المبلغ المجمع في savings_plans
   await sb
     .from('savings_plans')
     .update({ current_amount: saved })
@@ -405,7 +410,6 @@ window.deletePlan = async function(planId) {
   setMessage(planMessage, 'تم حذف التحويشة بنجاح، يمكنك الآن إنشاء تحويشة جديدة! 🚀', true);
 };
 
-// عرض تحميل بيانات الاشتراك وتحديث القائمة
 async function loadSubscriptions() {
   if (!currentUser) return;
 
