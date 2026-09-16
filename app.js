@@ -1,6 +1,6 @@
 /* =========================================================
    تطبيق تحويشتي - Tahweesha
-   Full Logic + Glowing Effects & Completion Celebration
+   Multi-Plan Management & Persistent Database Logic
    ========================================================= */
 
 const SUPABASE_URL = "https://iupgijqisikfsikgsjfg.supabase.co";
@@ -25,6 +25,7 @@ const progressPercent = document.getElementById('progressPercent');
 const targetInput = document.getElementById('targetAmount');
 const boxesSelect = document.getElementById('boxesCount');
 const googleBtn = document.getElementById('googleBtn');
+const plansList = document.getElementById('plansList');
 
 // التبويبات Tabs
 const tabSavingBtn = document.getElementById('tabSavingBtn');
@@ -49,8 +50,10 @@ const closeCelebrationBtn = document.getElementById('closeCelebrationBtn');
 
 let currentUser = null;
 let currentPlan = null;
+let allPlans = [];
 let items = [];
-let celebrationShown = false; // لمنع تكرار فتح النافذة تلقائياً
+let isPremiumUser = false;
+let celebrationShown = false;
 
 const MOTIVATIONAL_QUOTES = {
   0: "بداية الألف ميل تبدأ بخطوة واحدة! يلا نبدأ تحويش 🚀",
@@ -158,6 +161,7 @@ function makeCombination(total, targetBoxes) {
 
 function render() {
   grid.innerHTML = '';
+  renderPlansHeader();
   
   if (!items.length) { 
     emptyState.classList.remove('hidden'); 
@@ -173,8 +177,6 @@ function render() {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'saving-card' + (item.checked ? ' checked' : '');
-    
-    // ربط الفئة المالية بخاصية data-denom لتلوين الفئات
     card.setAttribute('data-denom', item.denomination);
 
     card.innerHTML = `
@@ -188,6 +190,35 @@ function render() {
   updateTotals();
 }
 
+function renderPlansHeader() {
+  if (!plansList) return;
+  plansList.innerHTML = '';
+
+  if (!allPlans.length) return;
+
+  allPlans.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.style.cssText = `
+      background: ${currentPlan?.id === p.id ? 'rgba(59, 130, 246, 0.15)' : 'rgba(30, 41, 59, 0.7)'};
+      border: 1px solid ${currentPlan?.id === p.id ? '#3b82f6' : 'rgba(255,255,255,0.1)'};
+      padding: 12px 16px; border-radius: 12px; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    `;
+
+    card.innerHTML = `
+      <div>
+        <strong style="color: #fff;">تحويشة #${i + 1} (${money(p.target_amount)})</strong>
+        <div style="font-size: 0.8rem; color: #94a3b8;">تم تجميع: ${money(p.current_amount || 0)}</div>
+      </div>
+      <div>
+        ${currentPlan?.id !== p.id ? `<button onclick="switchPlan('${p.id}')" class="ghost-btn" style="margin-left: 8px;">فتح</button>` : ''}
+        <button onclick="deletePlan('${p.id}')" style="background: #ef4444; color: #fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">حذف 🗑️</button>
+      </div>
+    `;
+    plansList.appendChild(card);
+  });
+}
+
 function updateTotals() {
   const target = Number(currentPlan?.target_amount || 0);
   const saved = items.filter(x => x.checked).reduce((s, x) => s + Number(x.denomination), 0);
@@ -199,7 +230,6 @@ function updateTotals() {
   progressPercent.textContent = `${percent}%`;
   progressBar.style.width = `${percent}%`;
 
-  // تحويل لون الشريط إلى الذهبي المتوهج عند الوصول إلى 100%
   if (percent >= 100) {
     progressBar.classList.add('completed-gold');
     if (!celebrationShown && items.length > 0) {
@@ -222,38 +252,63 @@ function updateTotals() {
   }
 }
 
-async function loadPlan() {
-  const { data: plan, error: planError } = await sb
-    .from('saving_plans')
+async function loadAllPlans() {
+  const { data: plans, error } = await sb
+    .from('savings_plans')
     .select('*')
     .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order('created_at', { ascending: false });
 
-  if (planError) { setMessage(planMessage, planError.message); return; }
-  currentPlan = plan;
+  if (error) { setMessage(planMessage, error.message); return; }
 
-  if (!plan) { items = []; render(); return; }
+  allPlans = plans || [];
 
+  if (!allPlans.length) {
+    currentPlan = null;
+    items = [];
+    render();
+    return;
+  }
+
+  // إذا لم تكن هناك تحويشة محددة، نختار الأولى
+  if (!currentPlan || !allPlans.find(p => p.id === currentPlan.id)) {
+    currentPlan = allPlans[0];
+  }
+
+  await loadPlanItems(currentPlan.id);
+}
+
+async function loadPlanItems(planId) {
   const { data: rows, error } = await sb
-    .from('saving_items')
+    .from('savings_items')
     .select('*')
-    .eq('plan_id', plan.id)
+    .eq('plan_id', planId)
     .order('position');
 
   if (error) { setMessage(planMessage, error.message); return; }
 
   items = rows || [];
-  targetInput.value = plan.target_amount;
-  celebrationShown = false; // إعادة تعيين التنبيه للرحلة الجديدة
+  celebrationShown = false;
   render();
 }
+
+window.switchPlan = async function(planId) {
+  currentPlan = allPlans.find(p => p.id === planId);
+  if (currentPlan) {
+    await loadPlanItems(planId);
+  }
+};
 
 async function createPlan() {
   setMessage(planMessage, '');
   const amount = Number(targetInput.value);
   const boxesCount = boxesSelect ? Number(boxesSelect.value) : 100;
+
+  // 1. فحص شرط الحساب المجاني
+  if (allPlans.length >= 1 && !isPremiumUser) {
+    setMessage(planMessage, 'الحساب المجاني يسمح بتحويشة واحدة فقط! يمكنك مسح التحويشة الحالية لإنشاء واحدة جديدة، أو ترقية حسابك.');
+    return;
+  }
 
   if (!Number.isInteger(amount) || amount < boxesCount * 20) {
     setMessage(planMessage, `المبلغ يجب أن يكون رقماً صحيحاً ويبدأ من ${money(boxesCount * 20)} لجدول الـ ${boxesCount} خانة.`);
@@ -266,20 +321,16 @@ async function createPlan() {
     return;
   }
 
-  const { data: oldPlans } = await sb.from('saving_plans').select('id').eq('user_id', currentUser.id);
-  if (oldPlans?.length) {
-    const { error: delErr } = await sb.from('saving_plans').delete().eq('user_id', currentUser.id);
-    if (delErr) { setMessage(planMessage, delErr.message); return; }
-  }
-
+  // 2. إدراج التحويشة في جدول savings_plans
   const { data: plan, error } = await sb
-    .from('saving_plans')
-    .insert({ user_id: currentUser.id, target_amount: amount })
+    .from('savings_plans')
+    .insert({ user_id: currentUser.id, target_amount: amount, current_amount: 0 })
     .select()
     .single();
 
   if (error) { setMessage(planMessage, error.message); return; }
 
+  // 3. إدراج الخانات في جدول savings_items
   const rows = combo.map((d, i) => ({
     plan_id: plan.id,
     user_id: currentUser.id,
@@ -288,11 +339,11 @@ async function createPlan() {
     checked: false
   }));
 
-  const { error: itemErr } = await sb.from('saving_items').insert(rows);
+  const { error: itemErr } = await sb.from('savings_items').insert(rows);
   if (itemErr) { setMessage(planMessage, itemErr.message); return; }
 
   currentPlan = plan;
-  await loadPlan();
+  await loadAllPlans();
   setMessage(planMessage, `تم إنشاء خطة الـ ${boxesCount} خانة بنجاح ✨ بالتوفيق يا بطل!`, true);
 }
 
@@ -302,10 +353,15 @@ async function toggleItem(id) {
 
   const next = !item.checked;
   item.checked = next;
+
+  // حساب المجموع الجديد
+  const saved = items.filter(x => x.checked).reduce((s, x) => s + Number(x.denomination), 0);
+
   render();
 
+  // 1. تحديث حالة الخانة
   const { error } = await sb
-    .from('saving_items')
+    .from('savings_items')
     .update({ checked: next })
     .eq('id', id)
     .eq('user_id', currentUser.id);
@@ -314,8 +370,35 @@ async function toggleItem(id) {
     item.checked = !next;
     render();
     setMessage(planMessage, error.message);
+    return;
   }
+
+  // 2. تحديث المبلغ المجمع في savings_plans
+  await sb
+    .from('savings_plans')
+    .update({ current_amount: saved })
+    .eq('id', currentPlan.id);
+
+  if (currentPlan) currentPlan.current_amount = saved;
 }
+
+window.deletePlan = async function(planId) {
+  if (!confirm('هل أنت تأكد من حذف هذه التحويشة؟')) return;
+
+  const { error } = await sb
+    .from('savings_plans')
+    .delete()
+    .eq('id', planId)
+    .eq('user_id', currentUser.id);
+
+  if (error) {
+    alert('حدث خطأ أثناء الحذف: ' + error.message);
+    return;
+  }
+
+  await loadAllPlans();
+  setMessage(planMessage, 'تم حذف التحويشة بنجاح، يمكنك الآن إنشاء تحويشة جديدة! 🚀', true);
+};
 
 // عرض تحميل بيانات الاشتراك وتحديث القائمة
 async function loadSubscriptions() {
@@ -335,11 +418,13 @@ async function loadSubscriptions() {
   const activeSub = data?.find(x => x.status === 'approved');
 
   if (activeSub) {
+    isPremiumUser = true;
     subBadge.className = 'sub-badge premium';
     subBadge.textContent = 'حساب بلس مُفعل 👑';
     subDescription.textContent = 'حسابك مميز حالياً! تتمتع بكافة الصلاحيات والمميزات.';
     upgradeBtn.style.display = 'none';
   } else {
+    isPremiumUser = false;
     subBadge.className = 'sub-badge free';
     subBadge.textContent = 'الحساب المجاني ⭐️';
     subDescription.textContent = 'أنت الآن على الخطة المجانية. يمكنك ترقية حسابك للحصول على مميزات إضافية.';
@@ -416,30 +501,23 @@ async function login(mode) {
   }
 
   if (mode === 'signup') {
-    // 1. محاولة إنشاء الحساب
     const { data, error } = await sb.auth.signUp({ email, password });
 
-    if (error) {
-      return setMessage(authMessage, error.message);
-    }
+    if (error) return setMessage(authMessage, error.message);
 
-    // التحقق من أن Supabase لم يرفض البريد المسجل سابقاً
     if (data?.user && data?.user?.identities?.length === 0) {
       return setMessage(authMessage, 'هذا البريد الإلكتروني مُسجل بالفعل! جرب تسجيل الدخول.');
     }
 
-    // 2. تسجيل الدخول التلقائي فوراً بعد الإنشاء
     const { error: signInErr } = await sb.auth.signInWithPassword({ email, password });
     
     if (signInErr) {
-      // في حال كان خيار Confirm Email لا يزال مفعلاً في Supabase
       setMessage(authMessage, 'تم إنشاء الحساب! تفقد بريدك الإلكتروني لتأكيد الحساب ثم سجل الدخول.', true);
     } else {
       setMessage(authMessage, 'تم إنشاء الحساب وتسجيل الدخول بنجاح! 🚀', true);
     }
 
   } else {
-    // تسجيل الدخول العادي
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
@@ -471,18 +549,20 @@ document.getElementById('authForm')?.addEventListener('submit', e => {
 document.getElementById('logoutBtn')?.addEventListener('click', () => sb.auth.signOut());
 document.getElementById('generateBtn')?.addEventListener('click', createPlan);
 
-function showLoggedIn(user) {
+async function showLoggedIn(user) {
   currentUser = user;
   authView.classList.add('hidden');
   appView.classList.remove('hidden');
   userArea.classList.remove('hidden');
   userEmail.textContent = user.email || 'مستخدم';
-  loadPlan();
+  await loadSubscriptions();
+  await loadAllPlans();
 }
 
 function showLoggedOut() {
   currentUser = null;
   currentPlan = null;
+  allPlans = [];
   items = [];
   authView.classList.remove('hidden');
   appView.classList.add('hidden');
