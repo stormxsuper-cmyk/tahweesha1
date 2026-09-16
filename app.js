@@ -207,7 +207,7 @@ function renderPlansHeader() {
 
     card.innerHTML = `
       <div>
-        <strong style="color: #fff;">تحويشة #${i + 1} (${money(p.target_amount)})</strong>
+        <strong style="color: #fff;">${p.title || `تحويشة #${i + 1}`} (${money(p.target_amount)})</strong>
         <div style="font-size: 0.8rem; color: #94a3b8;">تم تجميع: ${money(p.current_amount || 0)}</div>
       </div>
       <div>
@@ -321,10 +321,15 @@ async function createPlan() {
     return;
   }
 
-  // 2. إدراج التحويشة في جدول savings_plans
+  // 2. إدراج التحويشة في جدول savings_plans مع إضافة حقل title
   const { data: plan, error } = await sb
     .from('savings_plans')
-    .insert({ user_id: currentUser.id, target_amount: amount, current_amount: 0 })
+    .insert({ 
+      user_id: currentUser.id, 
+      title: `تحويشة ${amount} ج`,
+      target_amount: amount, 
+      current_amount: 0 
+    })
     .select()
     .single();
 
