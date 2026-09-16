@@ -1,6 +1,6 @@
 /* =========================================================
    تطبيق تحويشتي - Tahweesha
-   Full Application Logic + Supabase & Google OAuth Integration
+   Full Logic + Tabs & Subscriptions Section
    ========================================================= */
 
 const SUPABASE_URL = "https://iupgijqisikfsikgsjfg.supabase.co";
@@ -8,7 +8,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_fCADiUYIL0cs2c2QpcynEw_qmMc-qJ3
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// 1. عناصر الواجهة (DOM Elements)
+// 1. عناصر الواجهة
 const authView = document.getElementById('authView');
 const appView = document.getElementById('appView');
 const userArea = document.getElementById('userArea');
@@ -23,14 +23,30 @@ const progressWrap = document.getElementById('progressWrap');
 const progressBar = document.getElementById('progressBar');
 const progressPercent = document.getElementById('progressPercent');
 const targetInput = document.getElementById('targetAmount');
-const boxesSelect = document.getElementById('boxesCount'); // قائمة اختيار الخانات
+const boxesSelect = document.getElementById('boxesCount');
 const googleBtn = document.getElementById('googleBtn');
+
+// التبويبات Tabs
+const tabSavingBtn = document.getElementById('tabSavingBtn');
+const tabSubBtn = document.getElementById('tabSubBtn');
+const tabSaving = document.getElementById('tabSaving');
+const tabSub = document.getElementById('tabSub');
+
+// عناصر الاشتراكات
+const subBadge = document.getElementById('subBadge');
+const subDescription = document.getElementById('subDescription');
+const subHistory = document.getElementById('subHistory');
+
+// النافذة المنبثقة Modal
+const premiumModal = document.getElementById('premiumModal');
+const upgradeBtn = document.getElementById('upgradeBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const confirmPayBtn = document.getElementById('confirmPayBtn');
 
 let currentUser = null;
 let currentPlan = null;
 let items = [];
 
-// 2. رسائل تشجيعية ديناميكية حسب نسبة الإنجاز
 const MOTIVATIONAL_QUOTES = {
   0: "بداية الألف ميل تبدأ بخطوة واحدة! يلا نبدأ تحويش 🚀",
   25: "عاش يا بطل! قطعنا ربع الطريق بامتياز 💪",
@@ -39,7 +55,6 @@ const MOTIVATIONAL_QUOTES = {
   100: "ألف مبروك! حققت الهدف وجمعت تحويشتك كاملاً 👑🎉"
 };
 
-// 3. دوال مساعدة
 function money(n) { return `${Number(n).toLocaleString('ar-EG')} ج`; }
 
 function setMessage(el, text, ok = false) { 
@@ -57,18 +72,29 @@ function randomShuffle(arr) {
   return a;
 }
 
-// 4. خوارزمية توزيع المبالغ بالنسب المئوية والتوزيع العشوائي
+// تبديل القوائم (Tabs)
+tabSavingBtn?.addEventListener('click', () => {
+  tabSavingBtn.classList.add('active');
+  tabSubBtn.classList.remove('active');
+  tabSaving.classList.remove('hidden');
+  tabSub.classList.add('hidden');
+});
+
+tabSubBtn?.addEventListener('click', () => {
+  tabSubBtn.classList.add('active');
+  tabSavingBtn.classList.remove('active');
+  tabSub.classList.remove('hidden');
+  tabSaving.classList.add('hidden');
+  loadSubscriptions();
+});
+
+// خوارزمية التوزيع
 function makeCombination(total, targetBoxes) {
   if (total < targetBoxes * 20 || !Number.isInteger(total)) return null;
 
-  // تحديد الفئات المتاحة (إضافة فئات إضافية للمبالغ الكبيرة أكثر من 10,000)
   let denoms = [20, 50, 100, 200, 250];
-  if (total > 10000) {
-    denoms.push(300, 500);
-  }
+  if (total > 10000) denoms.push(300, 500);
 
-  // توزيع الخانات الأساسية بناءً على النسب المحددة
-  // 30% فئة 20ج | 20% فئة 50ج | 20% فئة 100ج | 15% فئة 200ج | 15% فئة 250ج
   let counts = {
     20: Math.floor(targetBoxes * 0.30),
     50: Math.floor(targetBoxes * 0.20),
@@ -77,7 +103,6 @@ function makeCombination(total, targetBoxes) {
     250: Math.floor(targetBoxes * 0.15)
   };
 
-  // تعديل النسب في حالة المبالغ الكبيرة
   if (total > 10000) {
     counts[300] = Math.floor(targetBoxes * 0.05);
     counts[500] = Math.floor(targetBoxes * 0.05);
@@ -85,14 +110,12 @@ function makeCombination(total, targetBoxes) {
     counts[50] = Math.floor(targetBoxes * 0.15);
   }
 
-  // استكمال الخانات المتبقية لضمان الوصول لعدد الخانات المطلوب
   let currentBoxesCount = Object.values(counts).reduce((a, b) => a + b, 0);
   while (currentBoxesCount < targetBoxes) {
     counts[20]++;
     currentBoxesCount++;
   }
 
-  // إعداد مصفوفة الخانات
   let result = [];
   for (const [denom, count] of Object.entries(counts)) {
     for (let i = 0; i < count; i++) {
@@ -100,7 +123,6 @@ function makeCombination(total, targetBoxes) {
     }
   }
 
-  // ضبط مجموع القيم لتطابق المبلغ الإجمالي المطلوبة بدقة
   let currentSum = result.reduce((a, b) => a + b, 0);
   let diff = total - currentSum;
   let safetyLoop = 0;
@@ -126,11 +148,9 @@ function makeCombination(total, targetBoxes) {
     }
   }
 
-  // خلط وترتيب الخانات عشوائياً
   return randomShuffle(result);
 }
 
-// 5. عرض الخانات والتقدم والرسائل التشجيعية
 function render() {
   grid.innerHTML = '';
   
@@ -170,7 +190,6 @@ function updateTotals() {
   progressPercent.textContent = `${percent}%`;
   progressBar.style.width = `${percent}%`;
 
-  // إظهار الرسائل التشجيعية
   if (items.length > 0) {
     let currentQuote = MOTIVATIONAL_QUOTES[0];
     if (percent >= 100) currentQuote = MOTIVATIONAL_QUOTES[100];
@@ -182,7 +201,6 @@ function updateTotals() {
   }
 }
 
-// 6. الربط مع Supabase Database
 async function loadPlan() {
   const { data: plan, error: planError } = await sb
     .from('saving_plans')
@@ -226,14 +244,12 @@ async function createPlan() {
     return;
   }
 
-  // مسح الخطة القديمة إن وجدت
   const { data: oldPlans } = await sb.from('saving_plans').select('id').eq('user_id', currentUser.id);
   if (oldPlans?.length) {
     const { error: delErr } = await sb.from('saving_plans').delete().eq('user_id', currentUser.id);
     if (delErr) { setMessage(planMessage, delErr.message); return; }
   }
 
-  // إنشاء الخطة الجديدة
   const { data: plan, error } = await sb
     .from('saving_plans')
     .insert({ user_id: currentUser.id, target_amount: amount })
@@ -258,7 +274,6 @@ async function createPlan() {
   setMessage(planMessage, `تم إنشاء خطة الـ ${boxesCount} خانة بنجاح ✨ بالتوفيق يا بطل!`, true);
 }
 
-// التغيير السريع مع الحفظ في الخلفية
 async function toggleItem(id) {
   const item = items.find(x => x.id === id);
   if (!item) return;
@@ -274,13 +289,96 @@ async function toggleItem(id) {
     .eq('user_id', currentUser.id);
 
   if (error) {
-    item.checked = !next; // التراجع في حالة وجود خطأ
+    item.checked = !next;
     render();
     setMessage(planMessage, error.message);
   }
 }
 
-// 7. إدارة المصادقة (Auth) وتسجيل الدخول
+// عرض تحميل بيانات الاشتراك وتحديث القائمة
+async function loadSubscriptions() {
+  if (!currentUser) return;
+
+  const { data, error } = await sb
+    .from('premium_requests')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    subHistory.innerHTML = `<p class="error-text">حدث خطأ أثناء تحميل الاشتراكات: ${error.message}</p>`;
+    return;
+  }
+
+  const activeSub = data?.find(x => x.status === 'approved');
+
+  if (activeSub) {
+    subBadge.className = 'sub-badge premium';
+    subBadge.textContent = 'حساب بلس مُفعل 👑';
+    subDescription.textContent = 'حسابك مميز حالياً! تتمتع بكافة الصلاحيات والمميزات.';
+    upgradeBtn.style.display = 'none';
+  } else {
+    subBadge.className = 'sub-badge free';
+    subBadge.textContent = 'الحساب المجاني ⭐️';
+    subDescription.textContent = 'أنت الآن على الخطة المجانية. يمكنك ترقية حسابك للحصول على مميزات إضافية.';
+    upgradeBtn.style.display = 'inline-block';
+  }
+
+  if (!data || data.length === 0) {
+    subHistory.innerHTML = '<p class="empty-text">لا توجد طلبات اشتراك سابقة.</p>';
+    return;
+  }
+
+  subHistory.innerHTML = data.map(req => {
+    let statusText = 'قيد المراجعة ⏳';
+    let statusClass = 'pending';
+    if (req.status === 'approved') {
+      statusText = 'مُفعل ✓';
+      statusClass = 'approved';
+    }
+
+    const dateStr = new Date(req.created_at).toLocaleDateString('ar-EG');
+    return `
+      <div class="history-item">
+        <div>
+          <strong>مبلغ ${req.amount} ج.م</strong>
+          <small>رقم المحول: ${req.sender_phone} (${dateStr})</small>
+        </div>
+        <span class="status-tag ${statusClass}">${statusText}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// فتح وإغلاق النوافذ
+upgradeBtn?.addEventListener('click', () => premiumModal?.classList.remove('hidden'));
+closeModalBtn?.addEventListener('click', () => premiumModal?.classList.add('hidden'));
+
+confirmPayBtn?.addEventListener('click', async () => {
+  const selectedPlan = document.querySelector('input[name="plan"]:checked')?.value;
+  const senderPhone = document.getElementById('senderPhone')?.value.trim();
+
+  if (!currentUser) return alert('يرجى تسجيل الدخول أولاً.');
+  if (!senderPhone || senderPhone.length < 11) return alert('يرجى إدخال رقم موبايل صحيح مكون من 11 رقم.');
+
+  const { error } = await sb
+    .from('premium_requests')
+    .insert({
+      user_id: currentUser.id,
+      user_email: currentUser.email,
+      amount: Number(selectedPlan),
+      sender_phone: senderPhone,
+      status: 'pending'
+    });
+
+  if (error) return alert('حدث خطأ أثناء الإرسال: ' + error.message);
+
+  alert('تم إرسال الطلب بنجاح! سيتم مراجعة التحويل وتفعيل حسابك فور التأكد.');
+  premiumModal?.classList.add('hidden');
+  loadSubscriptions();
+});
+
+// إدارة تسجيل الدخول
 async function login(mode) {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -288,15 +386,14 @@ async function login(mode) {
 
   if (mode === 'signup') {
     const { error } = await sb.auth.signUp({ email, password });
-    if (error) { setMessage(authMessage, error.message); return; }
-    setMessage(authMessage, 'تم إنشاء الحساب بنجاح! إذا طلبت منك المنصة التأكيد، افتح بريدك الإلكتروني.', true);
+    if (error) return setMessage(authMessage, error.message);
+    setMessage(authMessage, 'تم إنشاء الحساب بنجاح!', true);
   } else {
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) setMessage(authMessage, error.message);
   }
 }
 
-// تسجيل الدخول بـ Google
 if (googleBtn) {
   googleBtn.addEventListener('click', async () => {
     const { error } = await sb.auth.signInWithOAuth({
@@ -307,7 +404,6 @@ if (googleBtn) {
   });
 }
 
-// الأحداث (Event Listeners)
 document.getElementById('authForm')?.addEventListener('submit', e => {
   e.preventDefault();
   login(e.submitter?.dataset.mode || 'login');
@@ -315,15 +411,13 @@ document.getElementById('authForm')?.addEventListener('submit', e => {
 
 document.getElementById('logoutBtn')?.addEventListener('click', () => sb.auth.signOut());
 document.getElementById('generateBtn')?.addEventListener('click', createPlan);
-targetInput?.addEventListener('keydown', e => { if (e.key === 'Enter') createPlan(); });
 
-// 8. التحكم في حالة الواجهة والجلسات
 function showLoggedIn(user) {
   currentUser = user;
   authView.classList.add('hidden');
   appView.classList.remove('hidden');
   userArea.classList.remove('hidden');
-  userEmail.textContent = user.email || user.user_metadata?.full_name || 'حساب Google';
+  userEmail.textContent = user.email || 'مستخدم';
   loadPlan();
 }
 
