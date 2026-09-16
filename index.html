@@ -4,165 +4,269 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f172a" />
-  <title>تحويشتي | خطتك للتوفير</title>
+  <title>تحويشتي | خطتك للتوفير والجمعيات التوثيقية</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- خلفيات التوهج الدائم Ambient Glowing Effects -->
+  <!-- خلفيات التوهج Ambient Glowing Effects -->
   <div class="bg-glow glow-1"></div>
   <div class="bg-glow glow-2"></div>
 
+  <!-- الشريط العلوي Topbar -->
   <header class="topbar">
-    <!-- توقيع التطوير أعلى اليمين -->
-    <div class="developer-tag">developed by SAM</div>
-    
-    <div class="brand"><span class="brand-mark">ج</span><span>تحويشتي</span></div>
-    
+    <div class="topbar-right">
+      <div class="developer-tag">developed by SAM</div>
+      <div class="brand"><span class="brand-mark">ج</span><span>تحويشتي</span></div>
+    </div>
+
+    <!-- منطقة بيانات المستخدم + الكريدت والستريك -->
     <div id="userArea" class="user-area hidden">
-      <span id="userEmail"></span>
+      <div class="user-badges">
+        <span id="streakDisplay" class="badge streak-badge" title="أيام التحويش المتتالية">🔥 0 يوم</span>
+        <span id="userCreditsDisplay" class="badge credit-badge" title="رصيدك من الكريدت">20 كريدت</span>
+      </div>
+      <span id="userEmail" class="user-email"></span>
       <button id="logoutBtn" class="ghost-btn">تسجيل خروج</button>
     </div>
   </header>
 
-  <main class="container">
-    <!-- شاشة تسجيل الدخول -->
+  <main class="main-layout">
+    <!-- 1. شاشة تسجيل الدخول والإنشاء -->
     <section id="authView" class="auth-card">
       <div class="hero-icon">💰</div>
       <h1>اعمل خطتك وابدأ التحويش</h1>
-      <p>سجّل دخولك، اكتب المبلغ اللي عايز توصله، واختار عدد الخانات.. استعد لتحدي التوفير!</p>
-      <button id="googleBtn" class="google-btn"><span class="google-g">G</span> الدخول باستخدام Google</button>
-      <div class="divider"><span>أو</span></div>
+      <p>احفظ فلوسك، نظّم جمعياتك بضمان وتوثيق قانوني، وتحدّى نفسك في التوفير!</p>
+      
       <form id="authForm">
         <input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email" required />
-        <input id="password" type="password" placeholder="كلمة المرور" minlength="6" autocomplete="current-password" required />
+        <input id="password" type="password" placeholder="كلمة المرور (6 أحرف/أرقام على الأقل)" minlength="6" autocomplete="current-password" required />
+        
+        <!-- موافقة الشروط والالتزام القانوني -->
+        <div class="terms-agreement">
+          <label class="checkbox-container">
+            <input type="checkbox" id="termsCheckbox" required />
+            <span class="checkmark"></span>
+            <span class="terms-text">أوافق على <a href="#" onclick="alert('الشروط تشمل الالتزام بالدفع في الجمعيات وإتاحة تقديم بيانات الرقم القومي للمقاضاة في حالة التخلف، مع الالتزام بنظام الكريدت.'); return false;">الشروط والأحكام وبنود التوثيق القانوني</a></span>
+          </label>
+        </div>
+
         <div class="auth-actions">
-          <button type="submit" data-mode="login" class="primary-btn">Log In</button>
-          <button type="submit" data-mode="signup" class="secondary-btn">Sign Up</button>
+          <button type="submit" data-mode="login" class="primary-btn">تسجيل الدخول</button>
+          <button type="submit" data-mode="signup" class="secondary-btn">حساب جديد (20 كريدت مجاناً 🎁)</button>
         </div>
       </form>
       <p id="authMessage" class="message"></p>
     </section>
 
-    <!-- شاشة التطبيق الرئيسية بعد الدخول -->
-    <section id="appView" class="hidden">
-      <!-- شريط التنقل بين القوائم (Tabs) -->
-      <nav class="app-tabs">
-        <button id="tabSavingBtn" class="tab-btn active">تحويشاتي 🎯</button>
-        <button id="tabSubBtn" class="tab-btn">اشتراكاتي 👑</button>
-      </nav>
+    <!-- 2. شاشة التطبيق الرئيسية (بعد تسجيل الدخول) -->
+    <div id="appView" class="app-container hidden">
+      
+      <!-- القائمة الجانبية (Sidebar Navigation) -->
+      <aside class="sidebar">
+        <nav id="sidebarNav" class="sidebar-nav">
+          <button class="sidebar-link active" data-tab="dashboard">
+            <span class="nav-icon">📊</span>
+            <span>الرئيسية والإحصائيات</span>
+          </button>
+          <button class="sidebar-link" data-tab="saving">
+            <span class="nav-icon">🎯</span>
+            <span>جداول التحويش</span>
+          </button>
+          <button class="sidebar-link" data-tab="pools">
+            <span class="nav-icon">📜</span>
+            <span>جمعياتي (توثيق محمي)</span>
+          </button>
+          <button class="sidebar-link" data-tab="credits">
+            <span class="nav-icon">💎</span>
+            <span>شراء الكريدت</span>
+          </button>
+        </nav>
+      </aside>
 
-      <!-- 1. تبويب تحويشاتي -->
-      <div id="tabSaving" class="tab-content active">
-        <div class="dashboard-head">
-          <div>
-            <span class="eyebrow">🚀 خطتك الشخصية</span>
-            <h1>اجمع المبلغ خانة بخانة!</h1>
+      <!-- محتوى التبويبات (Tab Contents) -->
+      <section class="content-area">
+
+        <!-- التبويب 1: الرئيسية والإحصائيات (Dashboard) -->
+        <div id="tab-dashboard" class="tab-content">
+          <div class="dashboard-head">
+            <div>
+              <span class="eyebrow">📈 نظرة عامة</span>
+              <h1>لوحة تحكم إنجازاتك</h1>
+            </div>
           </div>
-          <div class="remaining-card">
-            <span>متبقي للوصول للهدف</span>
-            <strong id="remaining">0 ج</strong>
-            <small>من أصل <b id="targetTotal">0 ج</b></small>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-title">إجمالي المبالغ المحوشة</span>
+              <strong id="totalSavedStat" class="stat-value">0 ج</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">عدد الجداول النشطة</span>
+              <strong id="activePlansStat" class="stat-value">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">أعلى هدف تحويش</span>
+              <strong id="highestPlanStat" class="stat-value">0 ج</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- التبويب 2: جداول التحويش (Saving Plans) -->
+        <div id="tab-saving" class="tab-content hidden">
+          <div class="dashboard-head">
+            <div>
+              <span class="eyebrow">🚀 خطتك الشخصية</span>
+              <h1>اجمع المبلغ خانة بخانة!</h1>
+            </div>
+            <div class="remaining-card">
+              <span>متبقي للوصول للهدف</span>
+              <strong id="remaining">0 ج</strong>
+              <small>من أصل <b id="targetTotal">0 ج</b></small>
+            </div>
+          </div>
+
+          <!-- قائمة التحويشات الحالية والتنقل بينها -->
+          <div id="plansList" class="plans-list"></div>
+
+          <!-- نموذج إنشاء تحويشة جديدة -->
+          <div class="create-card">
+            <label for="targetAmount">عايز تحوش كام وعلَى كام خانة؟</label>
+            <div class="amount-row">
+              <input id="targetAmount" type="number" min="1000" step="100" placeholder="المبلغ الكلي (مثال: 10000)" />
+              <select id="boxesCount" class="boxes-select">
+                <option value="50">50 خانة</option>
+                <option value="100" selected>100 خانة</option>
+                <option value="150">150 خانة</option>
+                <option value="200">200 خانة</option>
+              </select>
+              <button id="generateBtn" class="primary-btn">اعمل تحويشتي 🔥</button>
+            </div>
+            <p class="hint">💡 الخطة الأولى مجانية 100%! إنشاء خطة إضافية جديدة يستهلك 30 كريدت.</p>
+            <p id="planMessage" class="message"></p>
+          </div>
+
+          <!-- شريط التقدم وزر المعاينة/الطباعة -->
+          <div id="progressWrap" class="progress-wrap hidden">
+            <div class="progress-header">
+              <div class="progress-label">
+                <span>🔥 نسبة الإنجاز:</span>
+                <b id="progressPercent">0%</b>
+              </div>
+              <button id="previewPrintBtn" class="ghost-btn-sm">معاينة وطباعة الجدول 🖨️</button>
+            </div>
+            <div class="progress"><div id="progressBar"></div></div>
+          </div>
+
+          <!-- شبكة الخانات (Grid) -->
+          <div id="grid" class="grid"></div>
+          <div id="emptyState" class="empty-state">اكتب مبلغك واختار عدد الخانات ثم اضغط <b>اعمل تحويشتي</b> وابدأ الرحلة! 💪</div>
+        </div>
+
+        <!-- التبويب 3: الجمعيات التوثيقية (Moneypools) -->
+        <div id="tab-pools" class="tab-content hidden">
+          <div class="dashboard-head">
+            <div>
+              <span class="eyebrow">📜 إدارة الجمعيات بضمان قانوني</span>
+              <h1>جمعياتي التوثيقية المحمية</h1>
+            </div>
+            <button id="createPoolBtn" class="primary-btn">+ إنشاء جمعية جديدة</button>
+          </div>
+
+          <p id="poolMessage" class="message"></p>
+          <div id="poolsList" class="pools-list">
+            <p class="empty-text">جاري تحميل الجمعيات...</p>
           </div>
         </div>
 
-        <!-- قائمة التحويشات الحالية -->
-        <div id="plansList" class="plans-list"></div>
+        <!-- التبويب 4: شراء الكريدت (Buy Credits) -->
+        <div id="tab-credits" class="tab-content hidden">
+          <div class="subscription-card">
+            <h3>شحن رصيد الكريدت عبر WE Pay 💎</h3>
+            <p>يمكنك شحن رصيدك لاستخدام خدمات طباعة الجداول وإنشاء الخطط الإضافية:</p>
 
-        <!-- فورماً إنشاء تحويشة جديدة -->
-        <div class="create-card">
-          <label for="targetAmount">عايز تحوش كام وعلَى كام خانة؟</label>
-          <div class="amount-row">
-            <input id="targetAmount" type="number" min="20" step="10" placeholder="المبلغ الكلي (مثال: 5000)" />
-            <select id="boxesCount" class="boxes-select">
-              <option value="50">50 خانة</option>
-              <option value="100" selected>100 خانة</option>
-              <option value="150">150 خانة</option>
-              <option value="200">200 خانة</option>
-            </select>
-            <button id="generateBtn" class="primary-btn">اعمل تحويشتي 🔥</button>
+            <div class="plans-container">
+              <label class="plan-option">
+                <input type="radio" name="creditPack" value="20" checked />
+                <div class="plan-info">
+                  <span>باقة البداية (20 كريدت)</span>
+                  <strong>20 ج.م</strong>
+                </div>
+              </label>
+
+              <label class="plan-option highlight">
+                <input type="radio" name="creditPack" value="50" />
+                <div class="plan-info">
+                  <span>الباقة التوفيرية (60 كريدت)</span>
+                  <strong>50 ج.م</strong>
+                </div>
+              </label>
+
+              <label class="plan-option">
+                <input type="radio" name="creditPack" value="100" />
+                <div class="plan-info">
+                  <span>باقة المحترفين (140 كريدت)</span>
+                  <strong>100 ج.م</strong>
+                </div>
+              </label>
+            </div>
+
+            <div class="payment-instructions">
+              <p>قم بتحويل المبلغ المطلوب إلى رقم WE Pay التالي:</p>
+              <div class="phone-box-wrap">
+                <div class="phone-box">01558488193</div>
+                <button id="copyPhoneBtn" class="ghost-btn-sm">نسخ الرقم 📋</button>
+              </div>
+              <input type="tel" id="wePaySenderPhone" placeholder="أدخل رقم الموبايل الذي حولت منه (11 رقم)" required />
+              <button id="sendCreditReqBtn" class="primary-btn" style="width:100%; margin-top:10px;">إرسال طلب التأكيد</button>
+            </div>
+
+            <hr class="divider" />
+
+            <h4>سجل طلبات الشحن والكريدت</h4>
+            <div id="creditHistoryList" class="sub-history-list">
+              <p class="empty-text">لا توجد طلبات شحن سابقة.</p>
+            </div>
           </div>
-          <p class="hint">🎯 يتم توزيع المبلغ مع التركيز على الفلوس الفكة (20 / 50 / 100) لسهولة التحويش.</p>
-          <p id="planMessage" class="message"></p>
         </div>
 
-        <div id="progressWrap" class="progress-wrap hidden">
-          <div class="progress-label">
-            <span>🔥 نسبة الإنجاز:</span>
-            <b id="progressPercent">0%</b>
-          </div>
-          <div class="progress"><div id="progressBar"></div></div>
-        </div>
-
-        <div id="grid" class="grid"></div>
-        <div id="emptyState" class="empty-state">اكتب مبلغك واختار عدد الخانات ثم اضغط <b>اعمل تحويشتي</b> وابدأ الرحلة! 💪</div>
-      </div>
-
-      <!-- 2. تبويب اشتراكاتي -->
-      <div id="tabSub" class="tab-content hidden">
-        <div class="subscription-card">
-          <h3>حالة اشتراكك الحالي</h3>
-          <div class="sub-status-box">
-            <div class="sub-badge free" id="subBadge">الحساب المجاني ⭐️</div>
-            <p id="subDescription">أنت الآن على الخطة المجانية. يمكنك ترقية حسابك للحصول على مميزات إضافية.</p>
-            <button id="upgradeBtn" class="btn-upgrade">ترقية الحساب الآن 👑</button>
-          </div>
-
-          <hr class="divider">
-
-          <h4>سجل طلبات التحويل والاشتراكات</h4>
-          <div id="subHistory" class="sub-history-list">
-            <p class="empty-text">لا توجد طلبات اشتراك سابقة.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
 
-  <!-- نافذة ترقية الحساب (WE Pay Modal) -->
-  <div id="premiumModal" class="modal-overlay hidden">
-    <div class="modal-card">
-      <h3>ترقية الحساب إلى Tahweesha Premium 👑</h3>
-      <p>اختر الخطة المناسبة وقم بالتحويل عبر محفظة <strong>WE Pay</strong>:</p>
-      
-      <div class="plans-container">
-        <label class="plan-option">
-          <input type="radio" name="plan" value="50" checked>
-          <div class="plan-info">
-            <span>الاشتراك الشهري</span>
-            <strong>50 ج.م / شهرياً</strong>
-          </div>
-        </label>
+  <!-- ========================================== -->
+  <!-- النوافذ المنبثقة (Modals)                  -->
+  <!-- ========================================== -->
 
-        <label class="plan-option highlight">
-          <input type="radio" name="plan" value="400">
-          <div class="plan-info">
-            <span>الاشتراك السنوي <small>(توفير 20%)</small></span>
-            <strong>400 ج.م / سنوياً</strong>
-          </div>
-        </label>
-      </div>
-
-      <div class="payment-instructions">
-        <p>قم بتحويل المبلغ المطلوب إلى رقم WE Pay التالي:</p>
-        <div class="phone-box">01558488193</div>
-        <input type="tel" id="senderPhone" placeholder="أدخل رقم الموبايل الذي حولت منه" required>
-      </div>
-
-      <div class="modal-actions">
-        <button id="confirmPayBtn" class="primary-btn">تأكيد إرسال المبلغ</button>
-        <button id="closeModalBtn" class="ghost-btn">إلغاء</button>
+  <!-- 1. نافذة تفاصيل الجمعية والتوثيق -->
+  <div id="poolDetailsModal" class="modal-overlay hidden">
+    <div class="modal-card modal-large">
+      <div id="poolModalDetailsContent"></div>
+      <div class="modal-actions" style="margin-top:20px;">
+        <button onclick="document.getElementById('poolDetailsModal').classList.add('hidden')" class="ghost-btn">إغلاق Window</button>
       </div>
     </div>
   </div>
 
-  <!-- نافذة التهنئة المنبثقة عند اكتمال الهدف 100% -->
+  <!-- 2. نافذة المعاينة المجانية والطباعة (Print Preview) -->
+  <div id="printPreviewModal" class="modal-overlay hidden">
+    <div class="modal-card modal-large">
+      <div id="printPreviewContent"></div>
+      <div class="modal-actions" style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+        <button id="confirmPrintBtn" class="primary-btn">تأكيد خصم 10 كريدت والطباعة 🖨️</button>
+        <button id="closePrintPreviewBtn" class="ghost-btn">إلغاء المعاينة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. نافذة التهنئة عند اكتمال الهدف 100% -->
   <div id="celebrationModal" class="modal-overlay hidden">
     <div class="modal-card celebration-card">
       <div class="celebration-icon">🏆</div>
-      <h2 style="margin: 5px 0; font-size: 1.8rem; color: #f1c40f;">ألف مبروك يا بطل! 🎉</h2>
+      <h2 style="margin: 5px 0; font-size: 1.8rem; color: #facc15;">ألف مبروك يا بطل! 🎉</h2>
       <p style="color: #cbd5e1; line-height: 1.7; margin-bottom: 25px;">
         نجحت في إكمال تحويشتك بالكامل ووصلت للهدف! استمر في إنجازاتك واصنع خطة جديدة فوراً.
       </p>
@@ -170,8 +274,10 @@
     </div>
   </div>
 
+  <!-- الفوتر -->
   <footer>تحويشتي — كل علامة صح تقرّبك من هدفك خطوة.. استمر يا بطل ✨</footer>
 
+  <!-- المكتبات البرمجية -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
