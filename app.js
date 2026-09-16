@@ -57,55 +57,55 @@ function randomShuffle(arr) {
   return a;
 }
 
-// 4. خوارزمية توزيع المبالغ على عدد الخانات المختار بوزن أثقل للفئات الصغيرة (الفكة)
+// 4. خوارزمية توزيع المبالغ بالنسب المئوية والتوزيع العشوائي
 function makeCombination(total, targetBoxes) {
   if (total < targetBoxes * 20 || !Number.isInteger(total)) return null;
 
-  const denoms = [20, 50, 100, 200, 250];
-  const weights = [
-    { value: 20, weight: 35 },
-    { value: 50, weight: 30 },
-    { value: 100, weight: 20 },
-    { value: 200, weight: 10 },
-    { value: 250, weight: 5 }
-  ];
-
-  function getWeightedRandom(available) {
-    const filtered = weights.filter(w => available.includes(w.value));
-    const totalWeight = filtered.reduce((sum, w) => sum + w.weight, 0);
-    let rnd = Math.random() * totalWeight;
-    for (const w of filtered) {
-      if (rnd < w.weight) return w.value;
-      rnd -= w.weight;
-    }
-    return filtered[0].value;
+  // تحديد الفئات المتاحة (إضافة فئات إضافية للمبالغ الكبيرة أكثر من 10,000)
+  let denoms = [20, 50, 100, 200, 250];
+  if (total > 10000) {
+    denoms.push(300, 500);
   }
 
+  // توزيع الخانات الأساسية بناءً على النسب المحددة
+  // 30% فئة 20ج | 20% فئة 50ج | 20% فئة 100ج | 15% فئة 200ج | 15% فئة 250ج
+  let counts = {
+    20: Math.floor(targetBoxes * 0.30),
+    50: Math.floor(targetBoxes * 0.20),
+    100: Math.floor(targetBoxes * 0.20),
+    200: Math.floor(targetBoxes * 0.15),
+    250: Math.floor(targetBoxes * 0.15)
+  };
+
+  // تعديل النسب في حالة المبالغ الكبيرة
+  if (total > 10000) {
+    counts[300] = Math.floor(targetBoxes * 0.05);
+    counts[500] = Math.floor(targetBoxes * 0.05);
+    counts[20] = Math.floor(targetBoxes * 0.25);
+    counts[50] = Math.floor(targetBoxes * 0.15);
+  }
+
+  // استكمال الخانات المتبقية لضمان الوصول لعدد الخانات المطلوب
+  let currentBoxesCount = Object.values(counts).reduce((a, b) => a + b, 0);
+  while (currentBoxesCount < targetBoxes) {
+    counts[20]++;
+    currentBoxesCount++;
+  }
+
+  // إعداد مصفوفة الخانات
   let result = [];
-  let currentSum = 0;
-
-  for (let i = 0; i < targetBoxes; i++) {
-    const remainingBoxes = targetBoxes - i;
-    const remainingMoney = total - currentSum;
-
-    let available = denoms.filter(d => {
-      const rem = remainingMoney - d;
-      const minNeeded = (remainingBoxes - 1) * 20;
-      const maxPossible = (remainingBoxes - 1) * 250;
-      return rem >= minNeeded && rem <= maxPossible;
-    });
-
-    if (!available.length) available = [20];
-
-    const chosen = getWeightedRandom(available);
-    result.push(chosen);
-    currentSum += chosen;
+  for (const [denom, count] of Object.entries(counts)) {
+    for (let i = 0; i < count; i++) {
+      result.push(Number(denom));
+    }
   }
 
-  // الضبط الدقيق لأي فارق في الإجمالي
+  // ضبط مجموع القيم لتطابق المبلغ الإجمالي المطلوبة بدقة
+  let currentSum = result.reduce((a, b) => a + b, 0);
   let diff = total - currentSum;
   let safetyLoop = 0;
-  while (diff !== 0 && safetyLoop < 2000) {
+
+  while (diff !== 0 && safetyLoop < 3000) {
     safetyLoop++;
     const idx = Math.floor(Math.random() * result.length);
     const currentVal = result[idx];
@@ -126,6 +126,7 @@ function makeCombination(total, targetBoxes) {
     }
   }
 
+  // خلط وترتيب الخانات عشوائياً
   return randomShuffle(result);
 }
 
