@@ -23,6 +23,7 @@
   </header>
 
   <main class="container">
+    <!-- شاشة تسجيل الدخول -->
     <section id="authView" class="auth-card">
       <div class="hero-icon">💰</div>
       <h1>اعمل خطتك وابدأ التحويش</h1>
@@ -40,47 +41,113 @@
       <p id="authMessage" class="message"></p>
     </section>
 
+    <!-- شاشة التطبيق الرئيسية بعد الدخول -->
     <section id="appView" class="hidden">
-      <div class="dashboard-head">
-        <div>
-          <span class="eyebrow">🚀 خطتك الشخصية</span>
-          <h1>اجمع المبلغ خانة بخانة!</h1>
+      <!-- شريط التنقل بين القوائم (Tabs) -->
+      <nav class="app-tabs">
+        <button id="tabSavingBtn" class="tab-btn active">تحويشاتي 🎯</button>
+        <button id="tabSubBtn" class="tab-btn">اشتراكاتي 👑</button>
+      </nav>
+
+      <!-- 1. تبويب تحويشاتي -->
+      <div id="tabSaving" class="tab-content active">
+        <div class="dashboard-head">
+          <div>
+            <span class="eyebrow">🚀 خطتك الشخصية</span>
+            <h1>اجمع المبلغ خانة بخانة!</h1>
+          </div>
+          <div class="remaining-card">
+            <span>متبقي للوصول للهدف</span>
+            <strong id="remaining">0 ج</strong>
+            <small>من أصل <b id="targetTotal">0 ج</b></small>
+          </div>
         </div>
-        <div class="remaining-card">
-          <span>متبقي للوصول للهدف</span>
-          <strong id="remaining">0 ج</strong>
-          <small>من أصل <b id="targetTotal">0 ج</b></small>
+
+        <div class="create-card">
+          <label for="targetAmount">عايز تحوش كام وعلَى كام خانة؟</label>
+          <div class="amount-row">
+            <input id="targetAmount" type="number" min="20" step="10" placeholder="المبلغ الكلي (مثال: 5000)" />
+            <select id="boxesCount" class="boxes-select">
+              <option value="50">50 خانة</option>
+              <option value="100" selected>100 خانة</option>
+              <option value="150">150 خانة</option>
+              <option value="200">200 خانة</option>
+            </select>
+            <button id="generateBtn" class="primary-btn">اعمل تحويشتي 🔥</button>
+          </div>
+          <p class="hint">🎯 يتم توزيع المبلغ مع التركيز على الفلوس الفكة (20 / 50 / 100) لسهولة التحويش.</p>
+          <p id="planMessage" class="message"></p>
         </div>
+
+        <div id="progressWrap" class="progress-wrap hidden">
+          <div class="progress-label">
+            <span>🔥 نسبة الإنجاز:</span>
+            <b id="progressPercent">0%</b>
+          </div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+
+        <div id="grid" class="grid"></div>
+        <div id="emptyState" class="empty-state">اكتب مبلغك واختار عدد الخانات ثم اضغط <b>اعمل تحويشتي</b> وابدأ الرحلة! 💪</div>
       </div>
 
-      <div class="create-card">
-        <label for="targetAmount">عايز تحوش كام وعلَى كام خانة؟</label>
-        <div class="amount-row">
-          <input id="targetAmount" type="number" min="20" step="10" placeholder="المبلغ الكلي (مثال: 5000)" />
-          <select id="boxesCount" class="boxes-select">
-            <option value="50">50 خانة</option>
-            <option value="100" selected>100 خانة</option>
-            <option value="150">150 خانة</option>
-            <option value="200">200 خانة</option>
-          </select>
-          <button id="generateBtn" class="primary-btn">اعمل تحويشتي 🔥</button>
-        </div>
-        <p class="hint">🎯 يتم توزيع المبلغ مع التركيز على الفلوس الفكة (20 / 50 / 100) لسهولة التحويش.</p>
-        <p id="planMessage" class="message"></p>
-      </div>
+      <!-- 2. تبويب اشتراكاتي -->
+      <div id="tabSub" class="tab-content hidden">
+        <div class="subscription-card">
+          <h3>حالة اشتراكك الحالي</h3>
+          <div class="sub-status-box">
+            <div class="sub-badge free" id="subBadge">الحساب المجاني ⭐️</div>
+            <p id="subDescription">أنت الآن على الخطة المجانية. يمكنك ترقية حسابك للحصول على مميزات إضافية.</p>
+            <button id="upgradeBtn" class="btn-upgrade">ترقية الحساب الآن 👑</button>
+          </div>
 
-      <div id="progressWrap" class="progress-wrap hidden">
-        <div class="progress-label">
-          <span>🔥 نسبة الإنجاز: <span style="color: #60a5fa;">عاش يا بطل، قربت توصل للهدف!</span></span>
-          <b id="progressPercent">0%</b>
-        </div>
-        <div class="progress"><div id="progressBar"></div></div>
-      </div>
+          <hr class="divider">
 
-      <div id="grid" class="grid"></div>
-      <div id="emptyState" class="empty-state">اكتب مبلغك واختار عدد الخانات ثم اضغط <b>اعمل تحويشتي</b> وابدأ الرحلة! 💪</div>
+          <h4>سجل طلبات التحويل والاشتراكات</h4>
+          <div id="subHistory" class="sub-history-list">
+            <p class="empty-text">لا توجد طلبات اشتراك سابقة.</p>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
+
+  <!-- نافذة ترقية الحساب (WE Pay Modal) -->
+  <div id="premiumModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3>ترقية الحساب إلى Tahweesha Premium 👑</h3>
+      <p>اختر الخطة المناسبة وقم بالتحويل عبر محفظة <strong>WE Pay</strong>:</p>
+      
+      <div class="plans-container">
+        <label class="plan-option">
+          <input type="radio" name="plan" value="50" checked>
+          <div class="plan-info">
+            <span>الاشتراك الشهري</span>
+            <strong>50 ج.م / شهرياً</strong>
+          </div>
+        </label>
+
+        <label class="plan-option highlight">
+          <input type="radio" name="plan" value="400">
+          <div class="plan-info">
+            <span>الاشتراك السنوي <small>(توفير 20%)</small></span>
+            <strong>400 ج.م / سنوياً</strong>
+          </div>
+        </label>
+      </div>
+
+      <div class="payment-instructions">
+        <p>قم بتحويل المبلغ المطلوب إلى رقم WE Pay التالي:</p>
+        <div class="phone-box">01558488193</div>
+        <input type="tel" id="senderPhone" placeholder="أدخل رقم الموبايل الذي حولت منه" required>
+      </div>
+
+      <div class="modal-actions">
+        <button id="confirmPayBtn" class="primary-btn">تأكيد إرسال المبلغ</button>
+        <button id="closeModalBtn" class="ghost-btn">إلغاء</button>
+      </div>
+    </div>
+  </div>
 
   <footer>تحويشتي — كل علامة صح تقرّبك من هدفك خطوة.. استمر يا بطل ✨</footer>
 
