@@ -26,7 +26,7 @@
     <section id="authView" class="auth-card">
       <div class="hero-icon">💰</div>
       <h1>اعمل خطتك وابدأ التحويش</h1>
-      <p>سجّل دخولك، اكتب المبلغ اللي عايز توصله، والموقع هيعمل لك جدول عشوائي ومنظم تقدر تعلّم فيه كل خانة لما تحوشها.</p>
+      <p>سجّل دخولك، اكتب المبلغ اللي عايز توصله، واختار عدد الخانات.. استعد لتحدي التوفير!</p>
       <button id="googleBtn" class="google-btn"><span class="google-g">G</span> الدخول باستخدام Google</button>
       <div class="divider"><span>أو</span></div>
       <form id="authForm">
@@ -43,37 +43,46 @@
     <section id="appView" class="hidden">
       <div class="dashboard-head">
         <div>
-          <span class="eyebrow">خطتك الشخصية</span>
-          <h1>اجمع المبلغ خانة بخانة</h1>
+          <span class="eyebrow">🚀 خطتك الشخصية</span>
+          <h1>اجمع المبلغ خانة بخانة!</h1>
         </div>
         <div class="remaining-card">
-          <span>متبقي</span>
+          <span>متبقي للوصول للهدف</span>
           <strong id="remaining">0 ج</strong>
           <small>من أصل <b id="targetTotal">0 ج</b></small>
         </div>
       </div>
 
       <div class="create-card">
-        <label for="targetAmount">عايز تحوش كام؟</label>
+        <label for="targetAmount">عايز تحوش كام وعلَى كام خانة؟</label>
         <div class="amount-row">
-          <input id="targetAmount" type="number" min="20" step="10" placeholder="مثال: 5000" />
-          <button id="generateBtn" class="primary-btn">اعمل تحويشتي</button>
+          <input id="targetAmount" type="number" min="20" step="10" placeholder="المبلغ الكلي (مثال: 5000)" />
+          <select id="boxesCount" class="boxes-select">
+            <option value="50">50 خانة</option>
+            <option value="100" selected>100 خانة</option>
+            <option value="150">150 خانة</option>
+            <option value="200">200 خانة</option>
+          </select>
+          <button id="generateBtn" class="primary-btn">اعمل تحويشتي 🔥</button>
         </div>
-        <p class="hint">المبالغ من 20 جنيه فأكثر التي يمكن تكوينها من فئات 20 / 50 / 100 / 200 / 250.</p>
+        <p class="hint">🎯 يتم توزيع المبلغ مع التركيز على الفلوس الفكة (20 / 50 / 100) لسهولة التحويش.</p>
         <p id="planMessage" class="message"></p>
       </div>
 
       <div id="progressWrap" class="progress-wrap hidden">
-        <div class="progress-label"><span>نسبة الإنجاز</span><b id="progressPercent">0%</b></div>
+        <div class="progress-label">
+          <span>🔥 نسبة الإنجاز: <span style="color: #60a5fa;">عاش يا بطل، قربت توصل للهدف!</span></span>
+          <b id="progressPercent">0%</b>
+        </div>
         <div class="progress"><div id="progressBar"></div></div>
       </div>
 
       <div id="grid" class="grid"></div>
-      <div id="emptyState" class="empty-state">اكتب مبلغك واضغط <b>اعمل تحويشتي</b> علشان تظهر الخانات هنا.</div>
+      <div id="emptyState" class="empty-state">اكتب مبلغك واختار عدد الخانات ثم اضغط <b>اعمل تحويشتي</b> وابدأ الرحلة! 💪</div>
     </section>
   </main>
 
-  <footer>تحويشتي — كل علامة صح تقرّبك من هدفك ✨</footer>
+  <footer>تحويشتي — كل علامة صح تقرّبك من هدفك خطوة.. استمر يا بطل ✨</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
