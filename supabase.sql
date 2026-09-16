@@ -1,19 +1,23 @@
 -- ==========================================
--- تحويشتي Database Setup (Full Complete Script)
+-- تحويشتي Database Setup (Updated & Final)
 -- Run this entire script in Supabase SQL Editor.
 -- ==========================================
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- 1. جدول خطط التحويش
+-- 1. جدول خطط التحويش (مُضاف إليه عمود edit_count لتحديد عدد مرات التعديل)
 CREATE TABLE IF NOT EXISTS public.saving_plans (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   target_amount INTEGER NOT NULL CHECK (target_amount >= 20),
+  edit_count INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 2. جدول خانات التحويش (تم تحديث القيم المسموحة لدعم الفئات الكبيرة)
+-- التأكد من وجود عمود edit_count في حال كان الجدول مضافاً سابقاً
+ALTER TABLE public.saving_plans ADD COLUMN IF NOT EXISTS edit_count INTEGER DEFAULT 0;
+
+-- 2. جدول خانات التحويش
 CREATE TABLE IF NOT EXISTS public.saving_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   plan_id UUID NOT NULL REFERENCES public.saving_plans(id) ON DELETE CASCADE,
@@ -46,7 +50,7 @@ ALTER TABLE public.saving_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.premium_requests ENABLE ROW LEVEL SECURITY;
 
 -- ==========================================
--- سياسات الأمان (RLS Policies)
+-- سياسات الأمان الشاملة (RLS Policies)
 -- ==========================================
 
 -- سياسات جدول saving_plans
@@ -55,6 +59,9 @@ CREATE POLICY "plans_select_own" ON public.saving_plans FOR SELECT USING (auth.u
 
 DROP POLICY IF EXISTS "plans_insert_own" ON public.saving_plans;
 CREATE POLICY "plans_insert_own" ON public.saving_plans FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "plans_update_own" ON public.saving_plans;
+CREATE POLICY "plans_update_own" ON public.saving_plans FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "plans_delete_own" ON public.saving_plans;
 CREATE POLICY "plans_delete_own" ON public.saving_plans FOR DELETE USING (auth.uid() = user_id);
@@ -78,3 +85,6 @@ CREATE POLICY "premium_select_own" ON public.premium_requests FOR SELECT USING (
 
 DROP POLICY IF EXISTS "premium_insert_own" ON public.premium_requests;
 CREATE POLICY "premium_insert_own" ON public.premium_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "premium_update_own" ON public.premium_requests;
+CREATE POLICY "premium_update_own" ON public.premium_requests FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
