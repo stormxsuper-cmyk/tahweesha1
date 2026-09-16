@@ -401,19 +401,53 @@ confirmPayBtn?.addEventListener('click', async () => {
   loadSubscriptions();
 });
 
-// إدارة تسجيل الدخول
+// إدارة تسجيل الدخول والإنشاء بشكل مباشر وصحيح
 async function login(mode) {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passwordInput ? passwordInput.value : '';
+  
   setMessage(authMessage, '');
 
+  if (!email || !password) {
+    return setMessage(authMessage, 'يرجى كتابة البريد الإلكتروني وكلمة المرور بشكل صحيح');
+  }
+
   if (mode === 'signup') {
-    const { error } = await sb.auth.signUp({ email, password });
-    if (error) return setMessage(authMessage, error.message);
-    setMessage(authMessage, 'تم إنشاء الحساب بنجاح!', true);
+    // 1. محاولة إنشاء الحساب
+    const { data, error } = await sb.auth.signUp({ email, password });
+
+    if (error) {
+      return setMessage(authMessage, error.message);
+    }
+
+    // التحقق من أن Supabase لم يرفض البريد المسجل سابقاً
+    if (data?.user && data?.user?.identities?.length === 0) {
+      return setMessage(authMessage, 'هذا البريد الإلكتروني مُسجل بالفعل! جرب تسجيل الدخول.');
+    }
+
+    // 2. تسجيل الدخول التلقائي فوراً بعد الإنشاء
+    const { error: signInErr } = await sb.auth.signInWithPassword({ email, password });
+    
+    if (signInErr) {
+      // في حال كان خيار Confirm Email لا يزال مفعلاً في Supabase
+      setMessage(authMessage, 'تم إنشاء الحساب! تفقد بريدك الإلكتروني لتأكيد الحساب ثم سجل الدخول.', true);
+    } else {
+      setMessage(authMessage, 'تم إنشاء الحساب وتسجيل الدخول بنجاح! 🚀', true);
+    }
+
   } else {
+    // تسجيل الدخول العادي
     const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) setMessage(authMessage, error.message);
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        setMessage(authMessage, 'البريد أو كلمة المرور غير صحيحة، أو الحساب غير مفعل.');
+      } else {
+        setMessage(authMessage, error.message);
+      }
+    }
   }
 }
 
@@ -429,7 +463,9 @@ if (googleBtn) {
 
 document.getElementById('authForm')?.addEventListener('submit', e => {
   e.preventDefault();
-  login(e.submitter?.dataset.mode || 'login');
+  const submitter = e.submitter;
+  const mode = submitter && submitter.dataset && submitter.dataset.mode ? submitter.dataset.mode : 'login';
+  login(mode);
 });
 
 document.getElementById('logoutBtn')?.addEventListener('click', () => sb.auth.signOut());
