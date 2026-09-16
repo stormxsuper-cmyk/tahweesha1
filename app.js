@@ -405,7 +405,6 @@ async function createPlan() {
   const amount = Number(targetInput.value);
   const boxesCount = boxesSelect ? Number(boxesSelect.value) : 100;
 
-  // 1. الخطة الأولى مجانية، والخطة الإضافية بـ 30 كريدت
   if (allPlans.length >= 1) {
     const confirmDeduct = confirm('الخطة الأولى مجانية! إنشاء خطة إضافية جديدة يستهلك 30 كريدت. هل تريد المتابعة؟');
     if (!confirmDeduct) return;
@@ -635,7 +634,6 @@ createPoolBtn?.addEventListener('click', async () => {
 
   if (error) return alert('حدث خطأ أثناء إدراج الجمعية: ' + error.message);
 
-  // إدراج صاحب الجمعية كعضو أول تلقائياً
   await sb.from('moneypool_members').insert({
     pool_id: pool.id,
     user_id: currentUser.id,
