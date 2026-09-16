@@ -1,12 +1,14 @@
-/* تحويشتي - Supabase setup
-   Replace SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY with values from your Supabase project.
-   Never put a Supabase secret/service_role key in this browser file.
-*/
+/* =========================================================
+   تطبيق تحويشتي - Tahweesha
+   Full Application Logic + Supabase & Google OAuth Integration
+   ========================================================= */
+
 const SUPABASE_URL = "https://iupgijqisikfsikgsjfg.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_fCADiUYIL0cs2c2QpcynEw_qmMc-qJ3";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+// 1. عناصر الواجهة (DOM Elements)
 const authView = document.getElementById('authView');
 const appView = document.getElementById('appView');
 const userArea = document.getElementById('userArea');
@@ -21,155 +23,325 @@ const progressWrap = document.getElementById('progressWrap');
 const progressBar = document.getElementById('progressBar');
 const progressPercent = document.getElementById('progressPercent');
 const targetInput = document.getElementById('targetAmount');
+const boxesSelect = document.getElementById('boxesCount'); // قائمة اختيار الخانات
+const googleBtn = document.getElementById('googleBtn');
 
 let currentUser = null;
 let currentPlan = null;
 let items = [];
 
-function money(n){ return `${Number(n).toLocaleString('ar-EG')} ج`; }
-function setMessage(el, text, ok=false){ el.textContent = text || ''; el.style.color = ok ? '#86efac' : ''; }
+// 2. رسائل تشجيعية ديناميكية حسب نسبة الإنجاز
+const MOTIVATIONAL_QUOTES = {
+  0: "بداية الألف ميل تبدأ بخطوة واحدة! يلا نبدأ تحويش 🚀",
+  25: "عاش يا بطل! قطعنا ربع الطريق بامتياز 💪",
+  50: "وصلنا لنص الطريق! المجهود باين والمستقبل يلمع 🌟",
+  75: "قربنا جداً من خط النهاية! عشت يا وحش 🎯",
+  100: "ألف مبروك! حققت الهدف وجمعت تحويشتك كاملاً 👑🎉"
+};
 
-function randomShuffle(arr){
+// 3. دوال مساعدة
+function money(n) { return `${Number(n).toLocaleString('ar-EG')} ج`; }
+
+function setMessage(el, text, ok = false) { 
+  if (!el) return;
+  el.textContent = text || ''; 
+  el.style.color = ok ? '#86efac' : '#f87171'; 
+}
+
+function randomShuffle(arr) {
   const a = [...arr];
-  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  for (let i = a.length - 1; i > 0; i--) { 
+    const j = Math.floor(Math.random() * (i + 1)); 
+    [a[i], a[j]] = [a[j], a[i]]; 
+  }
   return a;
 }
 
-// Finds a random exact combination using the requested denominations.
-function makeCombination(total){
-  const denoms = [250,200,100,50,20];
-  if(total < 20 || !Number.isInteger(total)) return null;
+// 4. خوارزمية توزيع المبالغ على عدد الخانات المختار بوزن أثقل للفئات الصغيرة (الفكة)
+function makeCombination(total, targetBoxes) {
+  if (total < targetBoxes * 20 || !Number.isInteger(total)) return null;
 
-  // DP stores several possible count-vectors, then randomly picks one.
-  const ways = Array(total + 1).fill(null);
-  ways[0] = [[]];
-  for(let sum=20; sum<=total; sum+=10){
-    const candidates=[];
-    for(const d of denoms){
-      if(sum-d >= 0 && ways[sum-d]){
-        for(const counts of ways[sum-d].slice(0,8)){
-          const next=[...counts,d];
-          candidates.push(next);
-        }
+  const denoms = [20, 50, 100, 200, 250];
+  const weights = [
+    { value: 20, weight: 35 },
+    { value: 50, weight: 30 },
+    { value: 100, weight: 20 },
+    { value: 200, weight: 10 },
+    { value: 250, weight: 5 }
+  ];
+
+  function getWeightedRandom(available) {
+    const filtered = weights.filter(w => available.includes(w.value));
+    const totalWeight = filtered.reduce((sum, w) => sum + w.weight, 0);
+    let rnd = Math.random() * totalWeight;
+    for (const w of filtered) {
+      if (rnd < w.weight) return w.value;
+      rnd -= w.weight;
+    }
+    return filtered[0].value;
+  }
+
+  let result = [];
+  let currentSum = 0;
+
+  for (let i = 0; i < targetBoxes; i++) {
+    const remainingBoxes = targetBoxes - i;
+    const remainingMoney = total - currentSum;
+
+    let available = denoms.filter(d => {
+      const rem = remainingMoney - d;
+      const minNeeded = (remainingBoxes - 1) * 20;
+      const maxPossible = (remainingBoxes - 1) * 250;
+      return rem >= minNeeded && rem <= maxPossible;
+    });
+
+    if (!available.length) available = [20];
+
+    const chosen = getWeightedRandom(available);
+    result.push(chosen);
+    currentSum += chosen;
+  }
+
+  // الضبط الدقيق لأي فارق في الإجمالي
+  let diff = total - currentSum;
+  let safetyLoop = 0;
+  while (diff !== 0 && safetyLoop < 2000) {
+    safetyLoop++;
+    const idx = Math.floor(Math.random() * result.length);
+    const currentVal = result[idx];
+
+    if (diff > 0) {
+      const nextDenom = denoms.find(d => d > currentVal && (d - currentVal) <= diff);
+      if (nextDenom) {
+        diff -= (nextDenom - currentVal);
+        result[idx] = nextDenom;
+      }
+    } else if (diff < 0) {
+      const neededSub = Math.abs(diff);
+      const prevDenom = [...denoms].reverse().find(d => d < currentVal && (currentVal - d) <= neededSub);
+      if (prevDenom) {
+        diff += (currentVal - prevDenom);
+        result[idx] = prevDenom;
       }
     }
-    if(candidates.length) ways[sum]=candidates.slice(0,20);
   }
-  const candidates = ways[total];
-  if(!candidates || !candidates.length) return null;
-  const chosen = candidates[Math.floor(Math.random()*candidates.length)];
-  return randomShuffle(chosen);
+
+  return randomShuffle(result);
 }
 
-function render(){
-  grid.innerHTML='';
-  if(!items.length){ emptyState.classList.remove('hidden'); progressWrap.classList.add('hidden'); updateTotals(); return; }
-  emptyState.classList.add('hidden'); progressWrap.classList.remove('hidden');
-  items.forEach(item=>{
-    const card=document.createElement('button');
-    card.type='button';
-    card.className='saving-card' + (item.checked ? ' checked' : '');
-    card.innerHTML=`<div class="denom">${item.denomination.toLocaleString('ar-EG')}<small> جنيه</small></div><div class="check-text">${item.checked?'تم التحويش ✓':'اضغط للتعليم ✓'}</div>`;
-    card.addEventListener('click',()=>toggleItem(item.id));
+// 5. عرض الخانات والتقدم والرسائل التشجيعية
+function render() {
+  grid.innerHTML = '';
+  
+  if (!items.length) { 
+    emptyState.classList.remove('hidden'); 
+    progressWrap.classList.add('hidden'); 
+    updateTotals(); 
+    return; 
+  }
+
+  emptyState.classList.add('hidden'); 
+  progressWrap.classList.remove('hidden');
+
+  items.forEach(item => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'saving-card' + (item.checked ? ' checked' : '');
+    card.innerHTML = `
+      <div class="denom">${item.denomination.toLocaleString('ar-EG')}<small> جنيه</small></div>
+      <div class="check-text">${item.checked ? 'تم التحويش ✓' : 'اضغط للتعليم ✓'}</div>
+    `;
+    card.addEventListener('click', () => toggleItem(item.id));
     grid.appendChild(card);
   });
+
   updateTotals();
 }
 
-function updateTotals(){
-  const target=Number(currentPlan?.target_amount||0);
-  const saved=items.filter(x=>x.checked).reduce((s,x)=>s+Number(x.denomination),0);
-  const remaining=Math.max(0,target-saved);
-  const percent=target?Math.min(100,Math.round(saved/target*100)):0;
-  remainingEl.textContent=money(remaining);
-  targetTotalEl.textContent=money(target);
-  progressPercent.textContent=`${percent}%`;
-  progressBar.style.width=`${percent}%`;
+function updateTotals() {
+  const target = Number(currentPlan?.target_amount || 0);
+  const saved = items.filter(x => x.checked).reduce((s, x) => s + Number(x.denomination), 0);
+  const remaining = Math.max(0, target - saved);
+  const percent = target ? Math.min(100, Math.round((saved / target) * 100)) : 0;
+
+  remainingEl.textContent = money(remaining);
+  targetTotalEl.textContent = money(target);
+  progressPercent.textContent = `${percent}%`;
+  progressBar.style.width = `${percent}%`;
+
+  // إظهار الرسائل التشجيعية
+  if (items.length > 0) {
+    let currentQuote = MOTIVATIONAL_QUOTES[0];
+    if (percent >= 100) currentQuote = MOTIVATIONAL_QUOTES[100];
+    else if (percent >= 75) currentQuote = MOTIVATIONAL_QUOTES[75];
+    else if (percent >= 50) currentQuote = MOTIVATIONAL_QUOTES[50];
+    else if (percent >= 25) currentQuote = MOTIVATIONAL_QUOTES[25];
+
+    setMessage(planMessage, currentQuote, true);
+  }
 }
 
-async function loadPlan(){
-  const {data:plan,error:planError}=await sb.from('saving_plans').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
-  if(planError){setMessage(planMessage,planError.message);return;}
-  currentPlan=plan;
-  if(!plan){items=[];render();return;}
-  const {data:rows,error}=await sb.from('saving_items').select('*').eq('plan_id',plan.id).order('position');
-  if(error){setMessage(planMessage,error.message);return;}
-  items=rows||[];
-  targetInput.value=plan.target_amount;
+// 6. الربط مع Supabase Database
+async function loadPlan() {
+  const { data: plan, error: planError } = await sb
+    .from('saving_plans')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (planError) { setMessage(planMessage, planError.message); return; }
+  currentPlan = plan;
+
+  if (!plan) { items = []; render(); return; }
+
+  const { data: rows, error } = await sb
+    .from('saving_items')
+    .select('*')
+    .eq('plan_id', plan.id)
+    .order('position');
+
+  if (error) { setMessage(planMessage, error.message); return; }
+
+  items = rows || [];
+  targetInput.value = plan.target_amount;
   render();
 }
 
-async function createPlan(){
-  setMessage(planMessage,'');
-  const amount=Number(targetInput.value);
-  if(!Number.isInteger(amount) || amount<20){setMessage(planMessage,'اكتب مبلغًا صحيحًا يبدأ من 20 جنيه.');return;}
-  const combo=makeCombination(amount);
-  if(!combo){setMessage(planMessage,'المبلغ ده لا يمكن تكوينه من فئات 20 و50 و100 و200 و250. جرّب مبلغًا آخر.');return;}
+async function createPlan() {
+  setMessage(planMessage, '');
+  const amount = Number(targetInput.value);
+  const boxesCount = boxesSelect ? Number(boxesSelect.value) : 100;
 
-  const {data:oldPlans}=await sb.from('saving_plans').select('id').eq('user_id',currentUser.id);
-  if(oldPlans?.length){
-    const {error:delErr}=await sb.from('saving_plans').delete().eq('user_id',currentUser.id);
-    if(delErr){setMessage(planMessage,delErr.message);return;}
+  if (!Number.isInteger(amount) || amount < boxesCount * 20) {
+    setMessage(planMessage, `المبلغ يجب أن يكون رقماً صحيحاً ويبدأ من ${money(boxesCount * 20)} لجدول الـ ${boxesCount} خانة.`);
+    return;
   }
 
-  const {data:plan,error}=await sb.from('saving_plans').insert({user_id:currentUser.id,target_amount:amount}).select().single();
-  if(error){setMessage(planMessage,error.message);return;}
-  const rows=combo.map((d,i)=>({plan_id:plan.id,user_id:currentUser.id,denomination:d,position:i,checked:false}));
-  const {error:itemErr}=await sb.from('saving_items').insert(rows);
-  if(itemErr){setMessage(planMessage,itemErr.message);return;}
-  currentPlan=plan;items=rows.map((x,i)=>({...x,id:`temp-${i}`}));
-  // Reload so every item gets its real database id.
+  const combo = makeCombination(amount, boxesCount);
+  if (!combo) {
+    setMessage(planMessage, 'تعذر تقسيم المبلغ على الخانات المحددة. اختر مبلغاً أكبر.');
+    return;
+  }
+
+  // مسح الخطة القديمة إن وجدت
+  const { data: oldPlans } = await sb.from('saving_plans').select('id').eq('user_id', currentUser.id);
+  if (oldPlans?.length) {
+    const { error: delErr } = await sb.from('saving_plans').delete().eq('user_id', currentUser.id);
+    if (delErr) { setMessage(planMessage, delErr.message); return; }
+  }
+
+  // إنشاء الخطة الجديدة
+  const { data: plan, error } = await sb
+    .from('saving_plans')
+    .insert({ user_id: currentUser.id, target_amount: amount })
+    .select()
+    .single();
+
+  if (error) { setMessage(planMessage, error.message); return; }
+
+  const rows = combo.map((d, i) => ({
+    plan_id: plan.id,
+    user_id: currentUser.id,
+    denomination: d,
+    position: i,
+    checked: false
+  }));
+
+  const { error: itemErr } = await sb.from('saving_items').insert(rows);
+  if (itemErr) { setMessage(planMessage, itemErr.message); return; }
+
+  currentPlan = plan;
   await loadPlan();
-  setMessage(planMessage,'اتعملت الخطة بنجاح ✨',true);
+  setMessage(planMessage, `تم إنشاء خطة الـ ${boxesCount} خانة بنجاح ✨ بالتوفيق يا بطل!`, true);
 }
 
-async function toggleItem(id){
-  const item=items.find(x=>x.id===id); if(!item) return;
-  const next=!item.checked;
-  item.checked=next; render();
-  const {error}=await sb.from('saving_items').update({checked:next}).eq('id',id).eq('user_id',currentUser.id);
-  if(error){item.checked=!next;render();setMessage(planMessage,error.message);}
-}
+// التغيير السريع مع الحفظ في الخلفية
+async function toggleItem(id) {
+  const item = items.find(x => x.id === id);
+  if (!item) return;
 
-async function login(mode){
-  const email=document.getElementById('email').value.trim();
-  const password=document.getElementById('password').value;
-  setMessage(authMessage,'');
-  if(mode==='signup'){
-    const {error}=await sb.auth.signUp({email,password});
-    if(error){setMessage(authMessage,error.message);return;}
-    setMessage(authMessage,'تم إنشاء الحساب. لو طلب منك تأكيد البريد، افتح رسالة التأكيد ثم ارجع للموقع.',true);
-  }else{
-    const {error}=await sb.auth.signInWithPassword({email,password});
-    if(error)setMessage(authMessage,error.message);
+  const next = !item.checked;
+  item.checked = next;
+  render();
+
+  const { error } = await sb
+    .from('saving_items')
+    .update({ checked: next })
+    .eq('id', id)
+    .eq('user_id', currentUser.id);
+
+  if (error) {
+    item.checked = !next; // التراجع في حالة وجود خطأ
+    render();
+    setMessage(planMessage, error.message);
   }
 }
 
-document.getElementById('googleBtn').addEventListener('click',async()=>{
-  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin}});
-  if(error)setMessage(authMessage,error.message);
+// 7. إدارة المصادقة (Auth) وتسجيل الدخول
+async function login(mode) {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  setMessage(authMessage, '');
+
+  if (mode === 'signup') {
+    const { error } = await sb.auth.signUp({ email, password });
+    if (error) { setMessage(authMessage, error.message); return; }
+    setMessage(authMessage, 'تم إنشاء الحساب بنجاح! إذا طلبت منك المنصة التأكيد، افتح بريدك الإلكتروني.', true);
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) setMessage(authMessage, error.message);
+  }
+}
+
+// تسجيل الدخول بـ Google
+if (googleBtn) {
+  googleBtn.addEventListener('click', async () => {
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) setMessage(authMessage, error.message);
+  });
+}
+
+// الأحداث (Event Listeners)
+document.getElementById('authForm')?.addEventListener('submit', e => {
+  e.preventDefault();
+  login(e.submitter?.dataset.mode || 'login');
 });
 
-document.getElementById('authForm').addEventListener('submit',e=>{e.preventDefault();login(e.submitter?.dataset.mode||'login');});
-document.getElementById('logoutBtn').addEventListener('click',()=>sb.auth.signOut());
-document.getElementById('generateBtn').addEventListener('click',createPlan);
-targetInput.addEventListener('keydown',e=>{if(e.key==='Enter')createPlan();});
+document.getElementById('logoutBtn')?.addEventListener('click', () => sb.auth.signOut());
+document.getElementById('generateBtn')?.addEventListener('click', createPlan);
+targetInput?.addEventListener('keydown', e => { if (e.key === 'Enter') createPlan(); });
 
-function showLoggedIn(user){
-  currentUser=user;
-  authView.classList.add('hidden');appView.classList.remove('hidden');userArea.classList.remove('hidden');
-  userEmail.textContent=user.email||'حساب Google';
+// 8. التحكم في حالة الواجهة والجلسات
+function showLoggedIn(user) {
+  currentUser = user;
+  authView.classList.add('hidden');
+  appView.classList.remove('hidden');
+  userArea.classList.remove('hidden');
+  userEmail.textContent = user.email || user.user_metadata?.full_name || 'حساب Google';
   loadPlan();
 }
-function showLoggedOut(){
-  currentUser=null;currentPlan=null;items=[];authView.classList.remove('hidden');appView.classList.add('hidden');userArea.classList.add('hidden');
+
+function showLoggedOut() {
+  currentUser = null;
+  currentPlan = null;
+  items = [];
+  authView.classList.remove('hidden');
+  appView.classList.add('hidden');
+  userArea.classList.add('hidden');
 }
 
-sb.auth.onAuthStateChange((_event,session)=>{
-  if(session?.user) showLoggedIn(session.user); else showLoggedOut();
+sb.auth.onAuthStateChange((_event, session) => {
+  if (session?.user) showLoggedIn(session.user);
+  else showLoggedOut();
 });
 
-(async()=>{
-  const {data:{session}}=await sb.auth.getSession();
-  if(session?.user) showLoggedIn(session.user); else showLoggedOut();
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) showLoggedIn(session.user);
+  else showLoggedOut();
 })();
