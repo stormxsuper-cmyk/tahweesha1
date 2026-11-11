@@ -62,6 +62,7 @@ const progressBar = document.getElementById('progressBar');
 const progressPercent = document.getElementById('progressPercent');
 const targetInput = document.getElementById('targetAmount');
 const boxesSelect = document.getElementById('boxesCount');
+const boxValueCategorySelect = document.getElementById('boxValueCategory');
 const plansList = document.getElementById('plansList');
 
 // إحصائيات بصرية
@@ -389,11 +390,21 @@ async function deductCredits(
 // ==========================================
 function makeCombination(
   total,
-  targetBoxes
+  targetBoxes,
+  fixedValCategory = 'auto'
 ) {
+  // إذا تم اختيار فئة محددة (5ج، 10ج، 20ج)
+  if (fixedValCategory !== 'auto') {
+    const val = Number(fixedValCategory);
+    if (total !== targetBoxes * val) {
+      // إذا كان المبلغ الإجمالي يختلف، نقسم الخانات على القيمة الثابتة تلقائياً
+    }
+    return new Array(targetBoxes).fill(val);
+  }
+
   if (
     total <
-      targetBoxes * 20 ||
+      targetBoxes * 5 ||
     !Number.isInteger(total)
   ) {
     return null;
@@ -595,8 +606,11 @@ function render() {
 
     card.type = 'button';
 
+    // فئات الألوان حسب قيمة الخانة (5ج، 10ج، 20ج، إلخ)
+    const valClass = `val-${item.denomination}`;
+
     card.className =
-      'saving-card' +
+      `saving-card ${valClass}` +
       (item.checked
         ? ' checked'
         : '');
@@ -1061,7 +1075,7 @@ async function createPlan() {
     ''
   );
 
-  const amount =
+  let amount =
     Number(
       targetInput.value
     );
@@ -1072,6 +1086,17 @@ async function createPlan() {
           boxesSelect.value
         )
       : 100;
+
+  const boxCat = boxValueCategorySelect
+    ? boxValueCategorySelect.value
+    : 'auto';
+
+  // إذا تم اختيار فئة خانات محددة (مثل 5ج أو 10ج أو 20ج)
+  if (boxCat !== 'auto') {
+    const fixedVal = Number(boxCat);
+    amount = boxesCount * fixedVal;
+    if (targetInput) targetInput.value = amount;
+  }
 
   if (
     allPlans.length >= 1
@@ -1097,14 +1122,11 @@ async function createPlan() {
     !Number.isInteger(
       amount
     ) ||
-    amount <
-      boxesCount * 20
+    amount < 100
   ) {
     setMessage(
       planMessage,
-      `المبلغ يجب أن يكون رقماً صحيحاً ويبدأ من ${money(
-        boxesCount * 20
-      )} لجدول الـ ${boxesCount} خانة.`
+      `المبلغ يجب أن يكون رقماً صحيحاً ومناسباً لعدد الخانات.`
     );
 
     return;
@@ -1113,7 +1135,8 @@ async function createPlan() {
   const combo =
     makeCombination(
       amount,
-      boxesCount
+      boxesCount,
+      boxCat
     );
 
   if (!combo) {
