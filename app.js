@@ -11,9 +11,7 @@ const sb = window.supabase.createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
-// ==========================================
-// 1. عناصر الواجهة (DOM Elements)
-// ==========================================
+// عناصر الواجهة
 const authView = document.getElementById('authView');
 const appView = document.getElementById('appView');
 const userArea = document.getElementById('userArea');
@@ -25,23 +23,13 @@ const authMessage = document.getElementById('authMessage');
 const planMessage = document.getElementById('planMessage');
 const poolMessage = document.getElementById('poolMessage');
 
-// Navigation & Tabs
-const sidebarLinks = document.querySelectorAll('.sidebar-link');
-const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
-const oldNavButtons = document.querySelectorAll('.nav-btn');
-const tabButtons = document.querySelectorAll(
-  '.nav-btn, .sidebar-link, .mobile-nav-link'
-);
+const tabButtons = document.querySelectorAll('.nav-btn, .sidebar-link, .mobile-nav-link');
 const tabSections = document.querySelectorAll('.tab-content');
 
-// Mobile hamburger elements
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const mobileNavOverlay = document.getElementById('mobileNavOverlay');
-const mobileDrawer = document.getElementById('mobileDrawer');
 const mobileCloseBtn = document.getElementById('mobileCloseBtn');
-const mobileNav = document.getElementById('mobileNav');
 
-// عناصر التحويش
 const grid = document.getElementById('grid');
 const emptyState = document.getElementById('emptyState');
 const remainingEl = document.getElementById('remaining');
@@ -53,34 +41,26 @@ const targetInput = document.getElementById('targetAmount');
 const boxesSelect = document.getElementById('boxesCount');
 const plansList = document.getElementById('plansList');
 
-// إحصائيات بصرية
 const totalSavedStat = document.getElementById('totalSavedStat');
 const activePlansStat = document.getElementById('activePlansStat');
 const highestPlanStat = document.getElementById('highestPlanStat');
 
-// الجمعيات (Moneypools)
 const poolsList = document.getElementById('poolsList');
 const createPoolBtn = document.getElementById('createPoolBtn');
 const poolDetailsModal = document.getElementById('poolDetailsModal');
 
-// المعاينة والطباعة
 const printPreviewModal = document.getElementById('printPreviewModal');
 const confirmPrintBtn = document.getElementById('confirmPrintBtn');
 const closePrintPreviewBtn = document.getElementById('closePrintPreviewBtn');
 
-// شراء الكريدت
 const copyPhoneBtn = document.getElementById('copyPhoneBtn');
 const sendCreditReqBtn = document.getElementById('sendCreditReqBtn');
 const creditHistoryList = document.getElementById('creditHistoryList');
 
-// النوافذ المنبثقة والإنعاش
 const celebrationModal = document.getElementById('celebrationModal');
 const closeCelebrationBtn = document.getElementById('closeCelebrationBtn');
 const termsCheckbox = document.getElementById('termsCheckbox');
 
-// ==========================================
-// 2. المتغيرات العامة (State Management)
-// ==========================================
 let currentUser = null;
 let currentPlan = null;
 let allPlans = [];
@@ -98,9 +78,6 @@ const MOTIVATIONAL_QUOTES = {
   100: "ألف مبروك! حققت الهدف وجمعت تحويشتك كاملاً 👑🎉"
 };
 
-// ==========================================
-// 3. الدوال المساعدة (Helpers)
-// ==========================================
 function money(n) {
   return `${Number(n || 0).toLocaleString('ar-EG')} ج`;
 }
@@ -120,55 +97,35 @@ function randomShuffle(arr) {
   return a;
 }
 
-// ==========================================
-// 4. نظام الـHamburger للموبايل
-// ==========================================
+// قائمة الموبايل
 function openMobileMenu() {
   if (!mobileNavOverlay) return;
   mobileNavOverlay.classList.add('open');
-  mobileNavOverlay.setAttribute('aria-hidden', 'false');
-  mobileMenuBtn?.setAttribute('aria-expanded', 'true');
   document.body.classList.add('mobile-menu-open');
 }
 
 function closeMobileMenu() {
   if (!mobileNavOverlay) return;
   mobileNavOverlay.classList.remove('open');
-  mobileNavOverlay.setAttribute('aria-hidden', 'true');
-  mobileMenuBtn?.setAttribute('aria-expanded', 'false');
   document.body.classList.remove('mobile-menu-open');
 }
 
-mobileMenuBtn?.addEventListener('click', (event) => {
-  event.preventDefault();
-  const isOpen = mobileNavOverlay?.classList.contains('open');
-  if (isOpen) {
-    closeMobileMenu();
-  } else {
-    openMobileMenu();
-  }
+mobileMenuBtn?.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (mobileNavOverlay?.classList.contains('open')) closeMobileMenu();
+  else openMobileMenu();
 });
 
-mobileCloseBtn?.addEventListener('click', (event) => {
-  event.preventDefault();
+mobileCloseBtn?.addEventListener('click', (e) => {
+  e.preventDefault();
   closeMobileMenu();
 });
 
-mobileNavOverlay?.addEventListener('click', (event) => {
-  if (event.target === mobileNavOverlay) {
-    closeMobileMenu();
-  }
+mobileNavOverlay?.addEventListener('click', (e) => {
+  if (e.target === mobileNavOverlay) closeMobileMenu();
 });
 
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
-    closeMobileMenu();
-  }
-});
-
-// ==========================================
-// 5. إدارة التنقل والتبويبات
-// ==========================================
+// التنقل بين التبويبات
 tabButtons?.forEach((btn) => {
   btn.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -178,151 +135,107 @@ tabButtons?.forEach((btn) => {
     tabButtons.forEach((b) => b.classList.remove('active'));
     tabSections.forEach((s) => s.classList.add('hidden'));
 
-    document.querySelectorAll(`[data-tab="${targetTab}"]`).forEach((b) => {
-      b.classList.add('active');
-    });
+    document.querySelectorAll(`[data-tab="${targetTab}"]`).forEach((b) => b.classList.add('active'));
+    document.getElementById(`tab-${targetTab}`)?.classList.remove('hidden');
 
-    const activeSection = document.getElementById(`tab-${targetTab}`);
-    if (activeSection) {
-      activeSection.classList.remove('hidden');
-    }
-
-    try {
-      localStorage.setItem('tahweesha_active_tab', targetTab);
-    } catch (error) {}
-
-    if (btn.classList.contains('mobile-nav-link')) {
-      closeMobileMenu();
-    }
+    if (btn.classList.contains('mobile-nav-link')) closeMobileMenu();
 
     if (targetTab === 'pools') await loadMoneypools();
     if (targetTab === 'credits') await loadCreditHistory();
     if (targetTab === 'dashboard') updateDashboardStats();
     if (targetTab === 'saving') {
-      if (currentPlan) {
-        render();
-      } else if (currentUser) {
-        await loadAllPlans();
-      }
+      if (currentPlan) render();
+      else if (currentUser) await loadAllPlans();
     }
   });
 });
 
-// ==========================================
-// 6. نظام الكريدت
-// ==========================================
 async function fetchUserCredits() {
   if (!currentUser) return;
-
-  const { data, error } = await sb
-    .from('savings_plans')
-    .select('user_credits')
-    .eq('user_id', currentUser.id)
-    .limit(1)
-    .maybeSingle();
-
-  if (data && data.user_credits !== undefined) {
-    userCredits = data.user_credits;
-  } else {
-    userCredits = 20;
-  }
-
-  if (userCreditsDisplay) {
-    userCreditsDisplay.textContent = `${userCredits} كريدت`;
-  }
+  const { data } = await sb.from('savings_plans').select('user_credits').eq('user_id', currentUser.id).limit(1).maybeSingle();
+  userCredits = data && data.user_credits !== undefined ? data.user_credits : 20;
+  if (userCreditsDisplay) userCreditsDisplay.textContent = `${userCredits} كريدت`;
 }
 
-async function deductCredits(amount, reason = '') {
+async function deductCredits(amount) {
   if (userCredits < amount) {
-    alert(`عفواً! رصيدك غير كافٍ. تحتاج إلى ${amount} كريدت לתنفيذ هذه العملية.`);
+    alert(`عفواً رصيدك غير كافٍ. تحتاج إلى ${amount} كريدت.`);
     return false;
   }
-
   const newCredits = userCredits - amount;
-  const { error } = await sb
-    .from('savings_plans')
-    .update({ user_credits: newCredits })
-    .eq('user_id', currentUser.id);
-
-  if (error) {
-    console.error('فشل خصم الكريدت:', error.message);
-    return false;
-  }
-
+  const { error } = await sb.from('savings_plans').update({ user_credits: newCredits }).eq('user_id', currentUser.id);
+  if (error) return false;
   userCredits = newCredits;
-  if (userCreditsDisplay) {
-    userCreditsDisplay.textContent = `${userCredits} كريدت`;
-  }
+  if (userCreditsDisplay) userCreditsDisplay.textContent = `${userCredits} كريدت`;
   return true;
 }
 
 // ==========================================
-// 7. خوارزمية تقسيم مبالغ التحويش للفئات المختارة
+// خوارزمية دمج وتوزيع الفئات المختارة بدقة متناهية
 // ==========================================
-function makeCombination(total, targetBoxes, selectedDenoms = [5, 10, 20, 50, 100, 200]) {
+function makeCombination(total, targetBoxes, selectedDenoms) {
   if (!selectedDenoms || selectedDenoms.length === 0) {
-    selectedDenoms = [5, 10, 20, 50, 100, 200];
+    selectedDenoms = [10, 20, 50, 100];
   }
   
-  // تصاعدي
   selectedDenoms.sort((a, b) => a - b);
+  const minAllowed = targetBoxes * selectedDenoms[0];
+  const maxAllowed = targetBoxes * selectedDenoms[selectedDenoms.length - 1];
 
-  let minPossible = targetBoxes * selectedDenoms[0];
-  if (total < minPossible) {
+  if (total < minAllowed || total > maxAllowed) {
     return null;
   }
 
   let result = [];
-  const countPerDenom = Math.floor(targetBoxes / selectedDenoms.length);
-
-  selectedDenoms.forEach(d => {
-    for (let i = 0; i < countPerDenom; i++) {
-      result.push(Number(d));
-    }
-  });
-
-  while (result.length < targetBoxes) {
-    const randomD = selectedDenoms[Math.floor(Math.random() * selectedDenoms.length)];
-    result.push(Number(randomD));
-  }
-
-  if (result.length > targetBoxes) {
-    result = result.slice(0, targetBoxes);
+  const baseVal = selectedDenoms[0];
+  for (let i = 0; i < targetBoxes; i++) {
+    result.push(baseVal);
   }
 
   let currentSum = result.reduce((a, b) => a + b, 0);
   let diff = total - currentSum;
-  let safetyLoop = 0;
+  let safety = 0;
 
-  while (diff !== 0 && safetyLoop < 4000) {
-    safetyLoop++;
+  while (diff > 0 && safety < 10000) {
+    safety++;
     const idx = Math.floor(Math.random() * result.length);
-    const currVal = result[idx];
-
-    if (diff > 0) {
-      const candidates = selectedDenoms.filter(d => d > currVal && (d - currVal) <= diff);
-      if (candidates.length > 0) {
-        const nextD = candidates[Math.floor(Math.random() * candidates.length)];
-        diff -= (nextD - currVal);
-        result[idx] = nextD;
-      }
-    } else if (diff < 0) {
-      const needed = Math.abs(diff);
-      const candidates = selectedDenoms.filter(d => d < currVal && (currVal - d) <= needed);
-      if (candidates.length > 0) {
-        const prevD = candidates[Math.floor(Math.random() * candidates.length)];
-        diff += (currVal - prevD);
-        result[idx] = prevD;
+    const curr = result[idx];
+    
+    // اختر فئة أعلى تساهم في تقليل الفارق
+    const candidates = selectedDenoms.filter(d => d > curr && (d - curr) <= diff);
+    if (candidates.length > 0) {
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      diff -= (chosen - curr);
+      result[idx] = chosen;
+    } else {
+      // إذا تعذر إيجاد زيادة مناسبة، حاول توزيع فرق صغير عشوائياً
+      const smallCandidates = selectedDenoms.filter(d => d > curr);
+      if (smallCandidates.length > 0) {
+        const chosen = smallCandidates[0];
+        if ((chosen - curr) <= diff) {
+          diff -= (chosen - curr);
+          result[idx] = chosen;
+        } else {
+          break;
+        }
+      } else {
+        break;
       }
     }
+  }
+
+  // مراجعة نهائية لتطابق المجموع بالضبط
+  currentSum = result.reduce((a, b) => a + b, 0);
+  if (currentSum !== total) {
+    // تعديل خانة واحدة أخيرة لضبط المجموع بدقة
+    const exactDiff = total - currentSum;
+    result[0] += exactDiff;
+    if (result[0] <= 0) return null;
   }
 
   return randomShuffle(result);
 }
 
-// ==========================================
-// 8. عرض الجداول وتحديث الواجهة
-// ==========================================
 function render() {
   if (!grid) return;
   grid.innerHTML = '';
@@ -341,7 +254,8 @@ function render() {
   items.forEach((item) => {
     const card = document.createElement('button');
     card.type = 'button';
-
+    
+    // ربط فئة اللون بالخانة تلقائياً
     const valClass = `val-${item.denomination}`;
     card.className = `saving-card ${valClass}` + (item.checked ? ' checked' : '');
     card.setAttribute('data-denom', item.denomination);
@@ -386,40 +300,25 @@ function renderPlansHeader() {
       gap: 8px;
     `;
 
-    const planTitle = p.title || `تحويشة #${i + 1}`;
-
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <span style="color: #facc15; font-size: 0.9rem; font-weight: 700;">🎯 ${planTitle}</span>
-          <div style="color: #fff; font-size: 1.1rem; font-weight: 700; margin-top:2px;">
-            ${money(p.target_amount)}
-          </div>
+          <span style="color: #facc15; font-size: 0.9rem; font-weight: 700;">🎯 ${p.title || `تحويشة #${i + 1}`}</span>
+          <div style="color: #fff; font-size: 1.1rem; font-weight: 700; margin-top:2px;">${money(p.target_amount)}</div>
         </div>
         <div style="display:flex; gap:6px;">
-          ${!isSelected ? `
-            <button type="button" onclick="switchPlan('${p.id}')" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:600;">
-              فتح 🔓
-            </button>
-          ` : `
-            <span style="background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:4px 8px; border-radius:6px; font-size:0.75rem;">
-              نشط الآن ✨
-            </span>
-          `}
-          <button type="button" onclick="deletePlan('${p.id}')" style="background:rgba(239, 68, 68, 0.2); color:#f87171; border:1px solid rgba(239, 68, 68, 0.3); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem;">
-            🗑️
-          </button>
+          ${!isSelected ? `<button type="button" onclick="switchPlan('${p.id}')" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem;">فتح 🔓</button>` : `<span style="background:rgba(34,197,94,0.2); color:#4ade80; padding:4px 8px; border-radius:6px; font-size:0.75rem;">نشط ✨</span>`}
+          <button type="button" onclick="deletePlan('${p.id}')" style="background:rgba(239, 68, 68, 0.2); color:#f87171; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;">🗑️</button>
         </div>
       </div>
-      <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:4px;">
+      <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8;">
         <span>تم تحويش: ${money(planSaved)}</span>
         <span style="color:#34d399; font-weight:bold;">${planPercent}%</span>
       </div>
       <div style="background:rgba(255,255,255,0.1); height:6px; border-radius:3px; overflow:hidden;">
-        <div style="background: linear-gradient(90deg, #10b981, #34d399); width:${planPercent}%; height:100%; border-radius:3px;"></div>
+        <div style="background: linear-gradient(90deg, #10b981, #34d399); width:${planPercent}%; height:100%;"></div>
       </div>
     `;
-
     plansList.appendChild(card);
   });
 }
@@ -445,21 +344,8 @@ function updateTotals() {
     progressBar?.classList.remove('completed-gold');
     celebrationShown = false;
   }
-
-  if (items.length > 0) {
-    let currentQuote = MOTIVATIONAL_QUOTES[0];
-    if (percent >= 100) currentQuote = MOTIVATIONAL_QUOTES[100];
-    else if (percent >= 75) currentQuote = MOTIVATIONAL_QUOTES[75];
-    else if (percent >= 50) currentQuote = MOTIVATIONAL_QUOTES[50];
-    else if (percent >= 25) currentQuote = MOTIVATIONAL_QUOTES[25];
-
-    setMessage(planMessage, currentQuote, true);
-  }
 }
 
-// ==========================================
-// 9. تحديث الإحصائيات
-// ==========================================
 function updateDashboardStats() {
   let totalSavedSum = 0;
   let totalTargetSum = 0;
@@ -468,68 +354,31 @@ function updateDashboardStats() {
   allPlans.forEach((p) => {
     totalSavedSum += Number(p.current_amount || 0);
     totalTargetSum += Number(p.target_amount || 0);
-    if (Number(p.target_amount) > maxTarget) {
-      maxTarget = Number(p.target_amount);
-    }
+    if (Number(p.target_amount) > maxTarget) maxTarget = Number(p.target_amount);
   });
-
-  const overallPercent = totalTargetSum > 0 ? Math.min(100, Math.round((totalSavedSum / totalTargetSum) * 100)) : 0;
 
   if (totalSavedStat) totalSavedStat.textContent = money(totalSavedSum);
   if (activePlansStat) activePlansStat.textContent = allPlans.length.toString();
   if (highestPlanStat) highestPlanStat.textContent = money(maxTarget);
   if (streakDisplay) streakDisplay.textContent = `${userStreak} يوم 🔥`;
-
-  const totalSavedBar = document.getElementById('totalSavedBar');
-  const totalSavedPercent = document.getElementById('totalSavedPercent');
-  if (totalSavedBar) totalSavedBar.style.width = `${overallPercent}%`;
-  if (totalSavedPercent) totalSavedPercent.textContent = `${overallPercent}% من إجمالي الأهداف`;
 }
 
-// ==========================================
-// 10. تحميل وإنشاء جداول التحويش
-// ==========================================
 async function loadAllPlans() {
-  const { data: plans, error } = await sb
-    .from('savings_plans')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    setMessage(planMessage, error.message);
-    return;
-  }
-
+  const { data: plans } = await sb.from('savings_plans').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
   allPlans = plans || [];
   updateDashboardStats();
-
   if (!allPlans.length) {
     currentPlan = null;
     items = [];
     render();
     return;
   }
-
-  if (!currentPlan || !allPlans.find((p) => p.id === currentPlan.id)) {
-    currentPlan = allPlans[0];
-  }
-
+  if (!currentPlan || !allPlans.find((p) => p.id === currentPlan.id)) currentPlan = allPlans[0];
   await loadPlanItems(currentPlan.id);
 }
 
 async function loadPlanItems(planId) {
-  const { data: rows, error } = await sb
-    .from('savings_items')
-    .select('*')
-    .eq('plan_id', planId)
-    .order('position');
-
-  if (error) {
-    setMessage(planMessage, error.message);
-    return;
-  }
-
+  const { data: rows } = await sb.from('savings_items').select('*').eq('plan_id', planId).order('position');
   items = rows || [];
   celebrationShown = false;
   render();
@@ -537,9 +386,7 @@ async function loadPlanItems(planId) {
 
 window.switchPlan = async function (planId) {
   currentPlan = allPlans.find((p) => p.id === planId);
-  if (currentPlan) {
-    await loadPlanItems(planId);
-  }
+  if (currentPlan) await loadPlanItems(planId);
 };
 
 async function createPlan() {
@@ -548,55 +395,45 @@ async function createPlan() {
   const amount = Number(targetInput.value);
   const boxesCount = boxesSelect ? Number(boxesSelect.value) : 100;
 
-  // جلب الفئات التي حددها المستخدم عبر Checkboxes
+  // جلب الفئات المفعلة من الأزرار الجديدة
   const checkedBoxes = document.querySelectorAll('input[name="boxDenom"]:checked');
   let selectedDenoms = Array.from(checkedBoxes).map(cb => Number(cb.value));
 
   if (selectedDenoms.length === 0) {
-    setMessage(planMessage, 'يرجى اختيار فئة واحدة على الأقل في الجدول!');
+    setMessage(planMessage, 'يرجى اختيار فئة واحدة على الأقل لعمل الجدول!');
     return;
   }
 
   if (allPlans.length >= 1) {
-    const confirmDeduct = confirm('الخطة الأولى مجانية! إنشاء خطة إضافية جديدة يستهلك 30 كريدت. هل تريد المتابعة؟');
-    if (!confirmDeduct) return;
-
-    const success = await deductCredits(30, 'إنشاء خطة تحويشة جديدة');
-    if (!success) return;
+    if (!confirm('الخطة الأولى مجانية! إنشاء خطة إضافية جديدة يستهلك 30 كريدت.')) return;
+    if (!await deductCredits(30)) return;
   }
 
   if (!Number.isInteger(amount) || amount <= 0) {
-    setMessage(planMessage, `يرجى إدخال مبلغ صحيح للتحويشة.`);
+    setMessage(planMessage, 'يرجى إدخال مبلغ صحيح.');
     return;
   }
 
   const combo = makeCombination(amount, boxesCount, selectedDenoms);
 
   if (!combo) {
-    const minNeeded = boxesCount * Math.min(...selectedDenoms);
-    setMessage(planMessage, `المبلغ قليل جداً على الفئات المختارة! الحد الأدنى لهذا الجدول هو ${money(minNeeded)}.`);
+    const minM = boxesCount * Math.min(...selectedDenoms);
+    const maxM = boxesCount * Math.max(...selectedDenoms);
+    setMessage(planMessage, `المبلغ غير مناسب لعدد الخانات والفئات المختارة! يجب أن يكون بين ${money(minM)} و ${money(maxM)}.`);
     return;
   }
 
-  const userInputTitle = prompt('اكتب اسم التحويشة (مثلاً: موبايل جديد / سفرية العيد):');
-  const finalTitle = userInputTitle && userInputTitle.trim() !== '' ? userInputTitle.trim() : `تحويشة ${amount} ج`;
+  const title = prompt('اكتب اسم التحويشة (مثلاً: موبايل جديد / سفرية):') || `تحويشة ${amount} ج`;
 
-  const { data: plan, error } = await sb
-    .from('savings_plans')
-    .insert({
-      user_id: currentUser.id,
-      title: finalTitle,
-      target_amount: amount,
-      current_amount: 0,
-      user_credits: userCredits
-    })
-    .select()
-    .single();
+  const { data: plan, error } = await sb.from('savings_plans').insert({
+    user_id: currentUser.id,
+    title: title.trim(),
+    target_amount: amount,
+    current_amount: 0,
+    user_credits: userCredits
+  }).select().single();
 
-  if (error) {
-    setMessage(planMessage, error.message);
-    return;
-  }
+  if (error) return setMessage(planMessage, error.message);
 
   const rows = combo.map((d, i) => ({
     plan_id: plan.id,
@@ -607,15 +444,11 @@ async function createPlan() {
   }));
 
   const { error: itemErr } = await sb.from('savings_items').insert(rows);
-
-  if (itemErr) {
-    setMessage(planMessage, itemErr.message);
-    return;
-  }
+  if (itemErr) return setMessage(planMessage, itemErr.message);
 
   currentPlan = plan;
   await loadAllPlans();
-  setMessage(planMessage, `تم إنشاء خطة (${finalTitle}) بنجاح ✨ بالتوفيق يا بطل!`, true);
+  setMessage(planMessage, 'تم إنشاء خطتك بنجاح ✨', true);
 }
 
 async function toggleItem(id) {
@@ -624,409 +457,55 @@ async function toggleItem(id) {
 
   const next = !item.checked;
   item.checked = next;
-
   const saved = items.filter((x) => x.checked).reduce((s, x) => s + Number(x.denomination), 0);
   render();
 
-  const { error } = await sb
-    .from('savings_items')
-    .update({ checked: next })
-    .eq('id', id)
-    .eq('user_id', currentUser.id);
-
-  if (error) {
-    item.checked = !next;
-    render();
-    setMessage(planMessage, error.message);
-    return;
-  }
-
-  await sb
-    .from('savings_plans')
-    .update({ current_amount: saved })
-    .eq('id', currentPlan.id);
-
-  if (currentPlan) {
-    currentPlan.current_amount = saved;
-  }
-
+  await sb.from('savings_items').update({ checked: next }).eq('id', id).eq('user_id', currentUser.id);
+  await sb.from('savings_plans').update({ current_amount: saved }).eq('id', currentPlan.id);
+  if (currentPlan) currentPlan.current_amount = saved;
   updateDashboardStats();
 }
 
 window.deletePlan = async function (planId) {
   if (!confirm('هل أنت تأكد من حذف هذه التحويشة؟')) return;
-
-  const { error } = await sb
-    .from('savings_plans')
-    .delete()
-    .eq('id', planId)
-    .eq('user_id', currentUser.id);
-
-  if (error) {
-    alert('حدث خطأ أثناء الحذف: ' + error.message);
-    return;
-  }
-
+  await sb.from('savings_plans').delete().eq('id', planId).eq('user_id', currentUser.id);
   await loadAllPlans();
-  setMessage(planMessage, 'تم حذف التحويشة بنجاح! 🚀', true);
 };
 
-// ==========================================
-// 11. وضع المعاينة والطباعة
-// ==========================================
-document.getElementById('previewPrintBtn')?.addEventListener('click', () => {
-  if (!currentPlan || !items.length) {
-    alert('اختر خطة تحويشة قائمة أولاً لتظهر لك المعاينة.');
-    return;
-  }
-
-  const previewContent = document.getElementById('printPreviewContent');
-  if (!previewContent) return;
-
-  previewContent.innerHTML = `
-    <div style="text-align:center; padding:20px; font-family:sans-serif;">
-      <h2>جدول تحويشتي - ${currentPlan.title}</h2>
-      <p>
-        الهدف الإجمالي: <strong>${money(currentPlan.target_amount)}</strong> | خانات: <strong>${items.length}</strong>
-      </p>
-      <hr style="margin:15px 0; border:0.5px solid #ccc;"/>
-      <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
-        ${items.map((it) => `
-          <div style="border:1px solid #000; padding:10px; border-radius:6px; width:70px; text-align:center;">
-            <strong>${it.denomination} ج</strong><br/>
-            <small>${it.checked ? '[✓]' : '[  ]'}</small>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-
-  printPreviewModal?.classList.remove('hidden');
-});
-
-closePrintPreviewBtn?.addEventListener('click', () => printPreviewModal?.classList.add('hidden'));
-
-confirmPrintBtn?.addEventListener('click', async () => {
-  const ok = confirm('الطباعة تستهلك 10 كريدتس. هل تود الاستمرار وتوليد الملف؟');
-  if (!ok) return;
-
-  const success = await deductCredits(10, 'طباعة جدول التحويشة');
-  if (!success) return;
-
-  printPreviewModal?.classList.add('hidden');
-  window.print();
-});
-
-// ==========================================
-// 12. نظام الجمعيات التوثيقي
-// ==========================================
-async function loadMoneypools() {
-  if (!currentUser) return;
-  setMessage(poolMessage, '');
-
-  const { data: pools, error } = await sb
-    .from('moneypools')
-    .select(`*, moneypool_members (*)`)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    setMessage(poolMessage, 'حدث خطأ أثناء تحميل الجمعيات: ' + error.message);
-    return;
-  }
-
-  currentPools = pools || [];
-  renderMoneypools();
-}
-
-function renderMoneypools() {
-  if (!poolsList) return;
-  poolsList.innerHTML = '';
-
-  if (!currentPools.length) {
-    poolsList.innerHTML = '<p class="empty-text" style="color:#94a3b8; text-align:center; padding:20px 0;">لا توجد جمعيات قائمة حالياً. أنشئ جمعيتك الأولى! 📜</p>';
-    return;
-  }
-
-  currentPools.forEach((pool) => {
-    const isOwner = pool.owner_id === currentUser.id;
-    const card = document.createElement('div');
-    card.className = 'pool-card';
-    card.style.cssText = `
-      background:rgba(30, 41, 59, 0.8);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:16px;
-      padding:16px;
-      margin-bottom:16px;
-    `;
-
-    card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:#facc15; margin:0; font-size:1.1rem;">
-          📜 ${pool.title}
-          ${isOwner ? '<span style="font-size:0.7rem; background:#2563eb; color:#fff; padding:2px 6px; border-radius:4px; margin-right:6px;">صاحب الجمعية</span>' : ''}
-        </h3>
-        <span style="color:#34d399; font-weight:bold; font-size:0.95rem;">
-          ${money(pool.installment_amount)} / ${pool.cycle_period}
-        </span>
-      </div>
-      <p style="color:#94a3b8; font-size:0.85rem; margin:10px 0;">
-        👥 عدد الأعضاء: <strong>${pool.moneypool_members?.length || 0} عضو</strong>
-      </p>
-      <button type="button" onclick="openPoolDetails('${pool.id}')" style="background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; border:none; padding:10px; border-radius:10px; width:100%; font-weight:600; cursor:pointer;">
-        عرض التفاصيل والدفع والتوثيق ✨
-      </button>
-    `;
-
-    poolsList.appendChild(card);
-  });
-}
-
-createPoolBtn?.addEventListener('click', async () => {
-  const title = prompt('ادخل اسم الجمعية (مثال: جمعية الأصحاب):');
-  if (!title) return;
-
-  const amount = prompt('ادخل مبلغ القسط لكل عضو (مثال: 500):');
-  if (!amount || isNaN(amount)) return;
-
-  const nationalId = prompt('ادخل رقمك القومي المكون من 14 رقم:');
-  if (!nationalId || nationalId.length !== 14) {
-    alert('الرقم القومي يجب أن يتكون من 14 رقم بالضبط!');
-    return;
-  }
-
-  const period = prompt('اختر دورة الدفع (أسبوع / أسبوعين / شهر):', 'شهر');
-
-  const { data: pool, error } = await sb
-    .from('moneypools')
-    .insert({
-      owner_id: currentUser.id,
-      owner_national_id: nationalId,
-      title: title,
-      installment_amount: Number(amount),
-      cycle_period: period || 'شهر'
-    })
-    .select()
-    .single();
-
-  if (error) return alert('حدث خطأ: ' + error.message);
-
-  await sb.from('moneypool_members').insert({
-    pool_id: pool.id,
-    user_id: currentUser.id,
-    username: currentUser.email.split('@')[0],
-    national_id: nationalId,
-    payout_method: 'نقداً / محفظة',
-    payout_number_or_account: 'حساب الأدمن',
-    role: 'editor'
-  });
-
-  alert('تم إنشاء الجمعية بنجاح!');
-  loadMoneypools();
-});
-
-window.openPoolDetails = async function (poolId) {
-  const pool = currentPools.find((p) => p.id === poolId);
-  if (!pool) return;
-
-  const isOwner = pool.owner_id === currentUser.id;
-  const modalContent = document.getElementById('poolModalDetailsContent');
-  if (!modalContent) return;
-
-  modalContent.innerHTML = `
-    <div style="padding:10px; font-family:sans-serif;">
-      <h2 style="color:#f8fafc; margin-bottom:6px;">تفاصيل جمعية: ${pool.title}</h2>
-      <p style="color:#94a3b8; font-size:0.9rem;">
-        مبلغ القسط: <strong style="color:#34d399;">${money(pool.installment_amount)}</strong> (${pool.cycle_period})
-      </p>
-      ${isOwner ? `
-        <div style="background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:12px; margin:15px 0;">
-          <h4 style="color:#facc15; margin:0 0 10px 0;">إضافة عضو جديد للجمعية 👤</h4>
-          <input type="text" id="addMemberUsername" placeholder="اسم المستخدم" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;" />
-          <input type="text" id="addMemberNationalId" placeholder="الرقم القومي (14 رقم)" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;" />
-          <input type="text" id="addMemberPayoutMethod" placeholder="طريقة الاستلام" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;" />
-          <input type="text" id="addMemberPayoutAccount" placeholder="رقم المحفظة / الحساب" style="padding:8px; margin-bottom:8px; width:100%; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff;" />
-          <button type="button" onclick="addMemberToPool('${pool.id}')" style="background:#10b981; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-weight:600; cursor:pointer; width:100%;">
-            إضافة العضو رسمياً ✨
-          </button>
-        </div>
-      ` : ''}
-      <button type="button" onclick="exportPoolPDF('${pool.id}')" style="background:#0284c7; color:#fff; border:none; padding:10px 15px; border-radius:10px; width:100%; margin-top:15px; font-weight:600; cursor:pointer;">
-        تصدير تقرير PDF توثيقي 🖨️
-      </button>
-    </div>
-  `;
-
-  poolDetailsModal?.classList.remove('hidden');
-};
-
-window.addMemberToPool = async function (poolId) {
-  const username = document.getElementById('addMemberUsername')?.value.trim();
-  const nationalId = document.getElementById('addMemberNationalId')?.value.trim();
-  const method = document.getElementById('addMemberPayoutMethod')?.value.trim();
-  const account = document.getElementById('addMemberPayoutAccount')?.value.trim();
-
-  if (!username || !nationalId || nationalId.length !== 14 || !method || !account) {
-    alert('يرجى ملء جميع الخانات وتأكيد أن الرقم القومي مكون من 14 رقم!');
-    return;
-  }
-
-  const { error } = await sb.from('moneypool_members').insert({
-    pool_id: poolId,
-    username: username,
-    national_id: nationalId,
-    payout_method: method,
-    payout_number_or_account: account,
-    role: 'viewer'
-  });
-
-  if (error) return alert('حدث خطأ: ' + error.message);
-
-  alert('تم إضافة العضو بنجاح!');
-  poolDetailsModal?.classList.add('hidden');
-  loadMoneypools();
-};
-
-window.exportPoolPDF = function (poolId) {
-  window.print();
-};
-
-// ==========================================
-// 13. الكريدت عبر WE Pay
-// ==========================================
-copyPhoneBtn?.addEventListener('click', () => {
-  navigator.clipboard.writeText('01558488193');
-  alert('تم نسخ رقم We Pay بنجاح: 01558488193 📋');
-});
-
-sendCreditReqBtn?.addEventListener('click', async () => {
-  const senderPhone = document.getElementById('wePaySenderPhone')?.value.trim();
-  const selectedPackage = document.querySelector('input[name="creditPack"]:checked')?.value;
-
-  if (!currentUser) return alert('يرجى تسجيل الدخول أولاً.');
-  if (!senderPhone || senderPhone.length < 11) return alert('يرجى إدخال رقم موبايل صحيح (11 رقم).');
-
-  const { error } = await sb.from('premium_requests').insert({
-    user_id: currentUser.id,
-    user_email: currentUser.email,
-    amount: Number(selectedPackage || 20),
-    sender_phone: senderPhone,
-    status: 'pending'
-  });
-
-  if (error) return alert('حدث خطأ: ' + error.message);
-
-  alert('تم إرسال طلب الشحن بنجاح!');
-  loadCreditHistory();
-});
-
-async function loadCreditHistory() {
-  if (!currentUser || !creditHistoryList) return;
-
-  const { data, error } = await sb
-    .from('premium_requests')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    creditHistoryList.innerHTML = `<p class="error-text">خطأ: ${error.message}</p>`;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    creditHistoryList.innerHTML = '<p class="empty-text" style="color:#94a3b8; text-align:center; padding:15px 0;">لا توجد طلبات شحن كريدت سابقة.</p>';
-    return;
-  }
-
-  creditHistoryList.innerHTML = data.map((req) => {
-    let statusText = 'قيد المراجعة ⏳';
-    let statusClass = 'pending';
-    if (req.status === 'approved') {
-      statusText = 'مُفعل وتم إضافة الكريدت ✓';
-      statusClass = 'approved';
-    }
-    const dateStr = new Date(req.created_at).toLocaleDateString('ar-EG');
-    return `
-      <div class="history-item" style="background:rgba(30,41,59,0.5); border:1px solid rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <strong style="color:#f8fafc;">طلب شحن بقيمة ${req.amount} ج.م</strong><br/>
-          <small style="color:#94a3b8;">من رقم: ${req.sender_phone} بتاريخ (${dateStr})</small>
-        </div>
-        <span class="status-tag ${statusClass}" style="font-size:0.8rem; font-weight:600;">${statusText}</span>
-      </div>
-    `;
-  }).join('');
-}
-
-// ==========================================
-// 14. المصادقة
-// ==========================================
+// المصادقة
 async function login(mode) {
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const email = emailInput ? emailInput.value.trim() : '';
-  const password = passwordInput ? passwordInput.value : '';
-
+  const email = document.getElementById('email')?.value.trim();
+  const password = document.getElementById('password')?.value;
   setMessage(authMessage, '');
 
-  if (!email || !password) {
-    return setMessage(authMessage, 'يرجى كتابة البريد الإلكتروني وكلمة المرور بشكل صحيح');
-  }
+  if (!email || !password) return setMessage(authMessage, 'املأ البيانات بشكل صحيح');
 
   if (mode === 'signup') {
-    if (termsCheckbox && !termsCheckbox.checked) {
-      return setMessage(authMessage, 'يجب الموافقة على الشروط والأحكام لتسجيل الحساب!');
-    }
-
-    const { data, error } = await sb.auth.signUp({ email, password });
+    if (!termsCheckbox?.checked) return setMessage(authMessage, 'يجب الموافقة على الشروط');
+    const { error } = await sb.auth.signUp({ email, password });
     if (error) return setMessage(authMessage, error.message);
-
-    if (data?.user && data?.user?.identities?.length === 0) {
-      return setMessage(authMessage, 'هذا البريد مُسجل بالفعل!');
-    }
-
-    const { error: signInErr } = await sb.auth.signInWithPassword({ email, password });
-    if (signInErr) {
-      setMessage(authMessage, 'تم إنشاء الحساب! تفقد بريدك لتأكيده.', true);
-    } else {
-      setMessage(authMessage, 'تم إنشاء الحساب ومعك 20 كريدت مجانية! 🚀', true);
-    }
+    await sb.auth.signInWithPassword({ email, password });
   } else {
     const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        setMessage(authMessage, 'البريد أو كلمة المرور غير صحيحة.');
-      } else {
-        setMessage(authMessage, error.message);
-      }
-    }
+    if (error) setMessage(authMessage, 'البريد أو كلمة المرور غير صحيحة');
   }
 }
 
 document.getElementById('authForm')?.addEventListener('submit', (e) => {
   e.preventDefault();
-  const submitter = e.submitter;
-  const mode = submitter?.dataset?.mode || 'login';
-  login(mode);
+  login(e.submitter?.dataset?.mode || 'login');
 });
 
 document.getElementById('logoutBtn')?.addEventListener('click', () => sb.auth.signOut());
 document.getElementById('generateBtn')?.addEventListener('click', createPlan);
 closeCelebrationBtn?.addEventListener('click', () => celebrationModal?.classList.add('hidden'));
 
-// ==========================================
-// 15. مراقبة الجلسة
-// ==========================================
 async function showLoggedIn(user) {
   currentUser = user;
   authView.classList.add('hidden');
   appView.classList.remove('hidden');
   userArea.classList.remove('hidden');
-
-  if (userEmail) {
-    userEmail.textContent = user.email || 'مستخدم';
-  }
-
+  if (userEmail) userEmail.textContent = user.email;
   closeMobileMenu();
   await fetchUserCredits();
   await loadAllPlans();
@@ -1037,26 +516,19 @@ function showLoggedOut() {
   currentPlan = null;
   allPlans = [];
   items = [];
-
   closeMobileMenu();
   authView.classList.remove('hidden');
   appView.classList.add('hidden');
   userArea.classList.add('hidden');
 }
 
-sb.auth.onAuthStateChange((_event, session) => {
-  if (session?.user) {
-    showLoggedIn(session.user);
-  } else {
-    showLoggedOut();
-  }
+sb.auth.onAuthStateChange((_, session) => {
+  if (session?.user) showLoggedIn(session.user);
+  else showLoggedOut();
 });
 
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) {
-    showLoggedIn(session.user);
-  } else {
-    showLoggedOut();
-  }
+  if (session?.user) showLoggedIn(session.user);
+  else showLoggedOut();
 })();
