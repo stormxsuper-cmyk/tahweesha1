@@ -636,7 +636,7 @@
           <div class="create-card">
 
             <label for="targetAmount">
-              عايز تحوش كام وعلَى كام خانة؟
+              عايز تحوش كام وعلَى كام خانة؟ واختار نوع الخانات واللون:
             </label>
 
 
@@ -675,6 +675,19 @@
                   200 خانة
                 </option>
 
+              </select>
+
+
+              <!-- تم إضافة اختيار قيمة الخانات واللون هنا بدقة -->
+              <select
+                id="boxValueCategory"
+                class="boxes-select"
+                title="اختر قيمة الخانات واللون"
+              >
+                <option value="auto">حسب المبلغ الإجمالي (تلقائي)</option>
+                <option value="5">خانات 5 جنيه (لون أزرق 🔹)</option>
+                <option value="10" selected>خانات 10 جنيه (لون أخضر 🟢)</option>
+                <option value="20">خانات 20 جنيه (لون أرجواني 🟣)</option>
               </select>
 
 
@@ -761,7 +774,7 @@
             id="emptyState"
             class="empty-state"
           >
-            اكتب مبلغك واختار عدد الخانات ثم اضغط
+            اكتب مبلغك واختار عدد الخانات ونوعها ثم اضغط
             <b>اعمل تحويشتي</b>
             وابدأ الرحلة! 💪
           </div>
