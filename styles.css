@@ -201,7 +201,6 @@ body {
 
 /* ==========================================
    زر Hamburger
-   يظهر على الموبايل فقط
    ========================================== */
 
 .mobile-menu-btn {
@@ -433,8 +432,6 @@ body {
   font-size: 11px;
   text-align: center;
 }
-
-/* منع Scroll الصفحة خلف القائمة */
 
 body.mobile-menu-open {
   overflow: hidden;
@@ -1313,9 +1310,20 @@ body.mobile-menu-open {
   transform: translateY(-1px);
 }
 
+/* ألوان القيم المختلفة (خانات 5ج، 10ج، 20ج، إلخ) */
+.saving-card[data-denom="5"] .denom {
+  color: #3498db !important;
+  text-shadow: 0 0 12px rgba(52, 152, 219, 0.4);
+}
+
+.saving-card[data-denom="10"] .denom {
+  color: #2ecc71 !important;
+  text-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+}
+
 .saving-card[data-denom="20"] .denom {
-  color: #ff5252 !important;
-  text-shadow: 0 0 12px rgba(255, 82, 82, 0.4);
+  color: #9b59b6 !important;
+  text-shadow: 0 0 12px rgba(155, 89, 182, 0.4);
 }
 
 .saving-card[data-denom="50"] .denom {
@@ -1540,8 +1548,17 @@ footer {
     display: none;
   }
 
+  /* إظهار شارات الاستريك والكريدت بوضوح في الهيدر على الموبايل */
   .user-area {
+    display: flex !important;
+    gap: 6px;
+  }
+  .user-email {
     display: none !important;
+  }
+  .badge {
+    padding: 3px 6px;
+    font-size: 10px;
   }
 
   .mobile-menu-btn {
@@ -1582,15 +1599,17 @@ footer {
   }
 
   .grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 
   .saving-card {
-    min-height: 100px;
+    min-height: 90px;
+    padding: 10px;
   }
 
   .denom {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .app-tabs,
@@ -1652,20 +1671,21 @@ footer {
 
 @media (max-width: 380px) {
   .grid {
-    gap: 8px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
   }
 
   .saving-card {
-    min-height: 92px;
-    padding: 12px;
+    min-height: 85px;
+    padding: 8px;
   }
 
   .denom {
-    font-size: 19px;
+    font-size: 17px;
   }
 
   .check-text {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .mobile-drawer {
