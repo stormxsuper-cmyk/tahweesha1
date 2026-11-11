@@ -27,11 +27,9 @@
   <header class="topbar">
 
     <div class="topbar-right">
-
       <div class="developer-tag">
         developed by SAM
       </div>
-
       <div
         class="brand"
         id="brandBtn"
@@ -40,7 +38,6 @@
         <span class="brand-mark">ج</span>
         <span>تحويشتي</span>
       </div>
-
     </div>
 
     <!-- بيانات المستخدم والشارات -->
@@ -48,9 +45,7 @@
       id="userArea"
       class="user-area hidden"
     >
-
       <div class="user-badges">
-
         <span
           id="streakDisplay"
           class="badge streak-badge"
@@ -58,7 +53,6 @@
         >
           🔥 0 يوم
         </span>
-
         <span
           id="userCreditsDisplay"
           class="badge credit-badge"
@@ -66,7 +60,6 @@
         >
           20 كريدت
         </span>
-
       </div>
 
       <span
@@ -81,7 +74,6 @@
       >
         خروج
       </button>
-
     </div>
 
     <button
@@ -105,24 +97,18 @@
     class="mobile-nav-overlay"
     aria-hidden="true"
   >
-
     <aside
       class="mobile-drawer"
       aria-label="قائمة التنقل"
     >
-
       <div class="mobile-drawer-header">
-
         <div class="mobile-drawer-brand">
           <span class="brand-mark">ج</span>
           <div>
             <div>تحويشتي</div>
-            <div class="mobile-drawer-subtitle">
-              developed by SAM
-            </div>
+            <div class="mobile-drawer-subtitle">developed by SAM</div>
           </div>
         </div>
-
         <button
           id="mobileCloseBtn"
           class="mobile-close-btn"
@@ -131,22 +117,16 @@
         >
           ×
         </button>
-
       </div>
 
       <div class="mobile-nav-content">
-
-        <span class="mobile-nav-label">
-          القائمة الرئيسية
-        </span>
-
+        <span class="mobile-nav-label">القائمة الرئيسية</span>
         <nav
           id="mobileNav"
           class="mobile-nav-list"
           role="tablist"
           aria-label="التنقل الرئيسي"
         >
-
           <button
             type="button"
             class="mobile-nav-link active"
@@ -190,17 +170,13 @@
             <span class="nav-icon">💎</span>
             <span>شراء الكريدت</span>
           </button>
-
         </nav>
-
       </div>
 
       <div class="mobile-drawer-footer">
         تحويشتي — كل خطوة تقرّبك من هدفك ✨
       </div>
-
     </aside>
-
   </div>
 
   <!-- المحتوى الرئيسي -->
@@ -211,17 +187,13 @@
       id="authView"
       class="auth-card"
     >
-
       <div class="hero-icon">💰</div>
-
       <h1>اعمل خطتك وابدأ التحويش</h1>
-
       <p>
         احفظ فلوسك، نظّم جمعياتك بضمان وتوثيق قانوني، وتحدّى نفسك في التوفير!
       </p>
 
       <form id="authForm">
-
         <input
           id="email"
           type="email"
@@ -229,7 +201,6 @@
           autocomplete="email"
           required
         />
-
         <input
           id="password"
           type="password"
@@ -267,7 +238,6 @@
           >
             تسجيل الدخول
           </button>
-
           <button
             type="submit"
             data-mode="signup"
@@ -276,14 +246,12 @@
             حساب جديد (20 كريدت مجاناً 🎁)
           </button>
         </div>
-
       </form>
 
       <p
         id="authMessage"
         class="message"
       ></p>
-
     </section>
 
     <!-- التطبيق الرئيسي -->
@@ -294,14 +262,12 @@
 
       <!-- Sidebar الكمبيوتر -->
       <aside class="sidebar">
-
         <nav
           id="sidebarNav"
           class="sidebar-nav"
           role="tablist"
           aria-label="التنقل الرئيسي"
         >
-
           <button
             type="button"
             class="sidebar-link active"
@@ -345,9 +311,7 @@
             <span class="nav-icon">💎</span>
             <span>شراء الكريدت</span>
           </button>
-
         </nav>
-
       </aside>
 
       <!-- محتوى التبويبات -->
@@ -359,7 +323,6 @@
           class="tab-content"
           role="tabpanel"
         >
-
           <div class="dashboard-head">
             <div>
               <span class="eyebrow">📈 نظرة عامة</span>
@@ -368,7 +331,6 @@
           </div>
 
           <div class="stats-grid">
-
             <div class="stat-card">
               <span class="stat-title">إجمالي المبالغ المحوشة</span>
               <strong
@@ -398,9 +360,7 @@
                 0 ج
               </strong>
             </div>
-
           </div>
-
         </div>
 
         <!-- Saving -->
@@ -409,9 +369,7 @@
           class="tab-content hidden"
           role="tabpanel"
         >
-
           <div class="dashboard-head">
-
             <div>
               <span class="eyebrow">🚀 خطتك الشخصية</span>
               <h1>اجمع المبلغ خانة بخانة!</h1>
@@ -422,7 +380,6 @@
               <strong id="remaining">0 ج</strong>
               <small>من أصل <b id="targetTotal">0 ج</b></small>
             </div>
-
           </div>
 
           <div
@@ -431,19 +388,17 @@
           ></div>
 
           <div class="create-card">
-
             <label for="targetAmount">
               عايز تحوش كام وعلَى كام خانة؟
             </label>
 
             <div class="amount-row">
-
               <input
                 id="targetAmount"
                 type="number"
                 min="100"
                 step="10"
-                placeholder="المبلغ الكلي (مثال: 1000)"
+                placeholder="المبلغ الكلي (مثال: 5000)"
               />
 
               <select
@@ -451,16 +406,13 @@
                 class="boxes-select"
               >
                 <option value="50">50 خانة</option>
-
                 <option
                   value="100"
                   selected
                 >
                   100 خانة
                 </option>
-
                 <option value="150">150 خانة</option>
-
                 <option value="200">200 خانة</option>
               </select>
 
@@ -471,33 +423,49 @@
               >
                 اعمل تحويشتي 🔥
               </button>
-
             </div>
 
-            <!-- خيارات تحديد الفئات المطلوبة -->
+            <!-- التصميم الجديد والعصري لاختيار الفئات بألوان مميزة -->
             <div class="denom-selector-wrapper">
               <label class="denom-selector-label">
-                🎯 اختار الفئات اللي تحبها في جدولك (توزيع تلقائي):
+                🎯 اختر فئات الخانات التي تريد دمجها في جدولك (توزيع ذكي ومتنوع):
               </label>
 
-              <div class="denom-checkboxes">
-                <label class="denom-check-item val-5">
-                  <input type="checkbox" name="boxDenom" value="5" checked /> 5 ج
+              <div class="denom-pills-grid">
+                <label class="denom-pill active">
+                  <input type="checkbox" name="boxDenom" value="5" checked hidden />
+                  <span class="pill-dot" style="background:#3498db;"></span>
+                  <span>5 جنيه</span>
                 </label>
-                <label class="denom-check-item val-10">
-                  <input type="checkbox" name="boxDenom" value="10" checked /> 10 ج
+
+                <label class="denom-pill active">
+                  <input type="checkbox" name="boxDenom" value="10" checked hidden />
+                  <span class="pill-dot" style="background:#2ecc71;"></span>
+                  <span>10 جنيه</span>
                 </label>
-                <label class="denom-check-item val-20">
-                  <input type="checkbox" name="boxDenom" value="20" checked /> 20 ج
+
+                <label class="denom-pill active">
+                  <input type="checkbox" name="boxDenom" value="20" checked hidden />
+                  <span class="pill-dot" style="background:#9b59b6;"></span>
+                  <span>20 جنيه</span>
                 </label>
-                <label class="denom-check-item val-50">
-                  <input type="checkbox" name="boxDenom" value="50" checked /> 50 ج
+
+                <label class="denom-pill active">
+                  <input type="checkbox" name="boxDenom" value="50" checked hidden />
+                  <span class="pill-dot" style="background:#ff79c6;"></span>
+                  <span>50 جنيه</span>
                 </label>
-                <label class="denom-check-item val-100">
-                  <input type="checkbox" name="boxDenom" value="100" checked /> 100 ج
+
+                <label class="denom-pill active">
+                  <input type="checkbox" name="boxDenom" value="100" checked hidden />
+                  <span class="pill-dot" style="background:#38bdf8;"></span>
+                  <span>100 جنيه</span>
                 </label>
-                <label class="denom-check-item val-200">
-                  <input type="checkbox" name="boxDenom" value="200" checked /> 200 ج
+
+                <label class="denom-pill active">
+                  <input type="checkbox" name="boxDenom" value="200" checked hidden />
+                  <span class="pill-dot" style="background:#a78bfa;"></span>
+                  <span>200 جنيه</span>
                 </label>
               </div>
             </div>
@@ -510,16 +478,13 @@
               id="planMessage"
               class="message"
             ></p>
-
           </div>
 
           <div
             id="progressWrap"
             class="progress-wrap hidden"
           >
-
             <div class="progress-header">
-
               <div class="progress-label">
                 <span>🔥 نسبة الإنجاز:</span>
                 <b id="progressPercent">0%</b>
@@ -532,13 +497,11 @@
               >
                 معاينة وطباعة الجدول 🖨️
               </button>
-
             </div>
 
             <div class="progress">
               <div id="progressBar"></div>
             </div>
-
           </div>
 
           <div
@@ -552,7 +515,6 @@
           >
             اكتب مبلغك واختار الفئات وعدد الخانات ثم اضغط <b>اعمل تحويشتي</b> وابدأ الرحلة! 💪
           </div>
-
         </div>
 
         <!-- Pools -->
@@ -561,9 +523,7 @@
           class="tab-content hidden"
           role="tabpanel"
         >
-
           <div class="dashboard-head">
-
             <div>
               <span class="eyebrow">📜 إدارة الجمعيات بضمان قانوني</span>
               <h1>جمعياتي التوثيقية المحمية</h1>
@@ -576,7 +536,6 @@
             >
               + إنشاء جمعية جديدة
             </button>
-
           </div>
 
           <p
@@ -590,7 +549,6 @@
           >
             <p class="empty-text">جاري تحميل الجمعيات...</p>
           </div>
-
         </div>
 
         <!-- Credits -->
@@ -599,17 +557,13 @@
           class="tab-content hidden"
           role="tabpanel"
         >
-
           <div class="subscription-card">
-
             <h3>شحن رصيد الكريدت عبر WE Pay 💎</h3>
-
             <p>
               يمكنك شحن رصيدك لاستخدام خدمات طباعة الجداول وإنشاء الخطط الإضافية:
             </p>
 
             <div class="plans-container">
-
               <label class="plan-option">
                 <input
                   type="radio"
@@ -646,11 +600,9 @@
                   <strong>100 ج.م</strong>
                 </div>
               </label>
-
             </div>
 
             <div class="payment-instructions">
-
               <p>قم بتحويل المبلغ المطلوب إلى رقم WE Pay التالي:</p>
 
               <div class="phone-box-wrap">
@@ -681,22 +633,18 @@
               >
                 إرسال طلب التأكيد
               </button>
-
             </div>
 
             <hr class="divider" />
 
             <h4>سجل طلبات الشحن والكريدت</h4>
-
             <div
               id="creditHistoryList"
               class="sub-history-list"
             >
               <p class="empty-text">لا توجد طلبات شحن سابقة.</p>
             </div>
-
           </div>
-
         </div>
 
       </section>
@@ -783,6 +731,24 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
+
+  <!-- سكريبت تفعيل أشكال اختيار الفئات الحديثة -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const pills = document.querySelectorAll('.denom-pill');
+      pills.forEach(pill => {
+        const checkbox = pill.querySelector('input[type="checkbox"]');
+        pill.addEventListener('click', () => {
+          checkbox.checked = !checkbox.checked;
+          if (checkbox.checked) {
+            pill.classList.add('active');
+          } else {
+            pill.classList.remove('active');
+          }
+        });
+      });
+    });
+  </script>
 
 </body>
 </html>
